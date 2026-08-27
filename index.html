@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don Aurelio — App de Gestión y Producción de Vermuts</title>
+    <style>
+        :root {
+            --burgundy: #4a1525;
+            --burgundy-dark: #360f1b;
+            --wine: #8b263e;
+            --wine-light: #a8324e;
+            --cream-bg: #faf8f5;
+            --card-bg: #ffffff;
+            --border-color: #dcd3c5;
+            --text-main: #2c3e50;
+            --text-muted: #6c757d;
+            --gold-accent: #c59b27;
+            --input-highlight: #fff9e6;
+            --success-color: #2e7d32;
+            --danger-color: #c62828;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--cream-bg);
+            color: var(--text-main);
+            line-height: 1.4;
+            padding-bottom: 60px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--burgundy-dark) 0%, var(--burgundy) 100%);
+            color: #ffffff;
+            padding: 14px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand-title h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #f3e5ab;
+            text-transform: uppercase;
+        }
+
+        .brand-title p {
+            font-size: 0.78rem;
+            color: #e0d0b0;
+        }
+
+        .nav-container {
+            background-color: var(--burgundy-dark);
+            padding: 6px 12px;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--wine);
+        }
+
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 6px;
+        }
+
+        .nav-tab {
+            background: none;
+            border: 1px solid transparent;
+            color: #d1c7bd;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab:hover {
+            background-color: rgba(255,255,255,0.08);
+            color: #ffffff;
+        }
+
+        .nav-tab.active {
+            background-color: var(--wine);
+            color: #ffffff;
+            border-color: var(--wine-light);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+
+        .nav-tab.tab-history {
+            background-color: #2a3b2c;
+            color: #d2f0d4;
+            border-color: #3e5a41;
+        }
+        .nav-tab.tab-history.active {
+            background-color: var(--success-color);
+            color: #ffffff;
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .section-header {
+            background-color: var(--wine);
+            color: #ffffff;
+            font-size: 0.92rem;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            background-color: #fdfbf7;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--burgundy);
+            text-transform: uppercase;
+        }
+
+        .control-group input {
+            padding: 8px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background-color: var(--input-highlight);
+            color: var(--burgundy);
+        }
+
+        .control-group input:focus {
+            outline: none;
+            border-color: var(--wine);
+            box-shadow: 0 0 0 3px rgba(139, 38, 62, 0.15);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+
+        th {
+            background-color: var(--burgundy-dark);
+            color: #ffffff;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 10px;
+            border: 1px solid #2a0c15;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) td {
+            background-color: var(--cream-bg);
+        }
+
+        tr:hover td {
+            background-color: #f0e9df;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        .highlight-value { color: var(--wine); font-weight: 700; }
+
+        .table-summary-row td {
+            background-color: var(--border-color) !important;
+            font-weight: 700;
+            color: var(--burgundy-dark);
+            border-top: 2px solid var(--burgundy);
+            border-bottom: 2px solid var(--burgundy);
+        }
+
+        .checkbox-cell {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--wine);
+            cursor: pointer;
+        }
+
+        .cost-input {
+            width: 85px;
+            padding: 4px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            text-align: right;
+            font-size: 0.82rem;
+            background-color: var(--input-highlight);
+        }
+
+        .protocol-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .protocol-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background-color: #fdfbf7;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            gap: 12px;
+        }
+
+        .protocol-info strong {
+            color: var(--burgundy);
+            display: block;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+        }
+
+        .protocol-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .qc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .qc-box {
+            background-color: #fdfbf7;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .qc-box label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--burgundy);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .qc-box input, .qc-box select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.88rem;
+        }
+
+        .batch-actions-footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 2px dashed var(--border-color);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-save-batch {
+            background-color: var(--success-color);
+            color: #ffffff;
+            font-size: 0.95rem;
+            padding: 10px 20px;
+            box-shadow: 0 3px 8px rgba(46, 125, 50, 0.3);
+        }
+        .btn-save-batch:hover {
+            background-color: #236327;
+            transform: translateY(-1px);
+        }
+
+        .btn-print {
+            background-color: var(--gold-accent);
+            color: #ffffff;
+        }
+        .btn-print:hover {
+            background-color: #a8831e;
+        }
+
+        .btn-reset {
+            background-color: #e9ecef;
+            color: var(--text-main);
+        }
+        .btn-reset:hover {
+            background-color: #dde2e6;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: #ffffff;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+        .btn-danger:hover {
+            background-color: #9b1c1c;
+        }
+
+        .master-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .master-card-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--wine);
+            border-radius: 6px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .master-card-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-left-color: var(--gold-accent);
+        }
+
+        .master-card-item h4 {
+            color: var(--burgundy);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .master-card-item .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background-color: #f0e6dc;
+            color: var(--burgundy);
+            margin-bottom: 8px;
+        }
+
+        .master-card-item p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @media print {
+            header, .nav-container, .btn-print, .btn-reset, .batch-actions-footer, .btn-danger {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #999;
+                page-break-inside: avoid;
+                margin-bottom: 12px;
+                padding: 10px;
+            }
+            .tab-content {
+                display: none !important;
+            }
+            .tab-content.active {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="brand-title">
+            <h1>Don Aurelio — Gestión de Vermutería</h1>
+            <p>Calculadora y Bitácora Operativa con Registro de Lotes (g) | CAA Art. 1111/1113</p>
+        </div>
+        <div>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir Ficha / Guardar PDF</button>
+            <button class="btn btn-reset" onclick="resetCurrentTab()">🔄 Restaurar Lote (5L)</button>
+        </div>
+    </div>
+</header>
+
+<div class="nav-container">
+    <div class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" onclick="switchTab('master')">📊 Tablero Maestro</button>
+        <button class="nav-tab tab-history" id="btn-history" onclick="switchTab('history')">📋 Historial de Lotes (<span id="historyCount">0</span>)</button>
+    </div>
+</div>
+
+<main id="mainContainer">
+    <!-- TABLERO MAESTRO -->
+    <div id="tab-master" class="tab-content active">
+        <div class="card">
+            <div class="section-header">
+                <span>Resumen General de Formulaciones (Lote Patrón 1.0 Litro)</span>
+                <span>11 Recetas Estandarizadas</span>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="masterTable">
+                    <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th>Receta / Perfil</th>
+                            <th>Marco CAA</th>
+                            <th>Vino Base Recomendado</th>
+                            <th class="text-right">Vino (g)</th>
+                            <th class="text-center">% Vino</th>
+                            <th class="text-right">Alc. 96° (g)</th>
+                            <th class="text-right">Agua (g)</th>
+                            <th class="text-right">Tintura (g)</th>
+                            <th>Endulzante Estandarizado</th>
+                            <th class="text-right">Azúcar (g)</th>
+                            <th class="text-center">% ABV</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="color: var(--burgundy); font-size: 1.05rem; margin: 24px 0 10px 0; text-transform: uppercase;">
+                Acceso Rápido a Fichas de Producción
+            </h3>
+            <div class="master-cards-grid" id="masterCardsGrid">
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA HISTORIAL DE LOTES -->
+    <div id="tab-history" class="tab-content">
+        <div class="card">
+            <div class="section-header" style="background-color: #2a3b2c;">
+                <span>Bitácora de Lotes Producidos (Historial Guardado)</span>
+                <div>
+                    <button class="btn btn-print" style="padding: 4px 10px; font-size: 0.75rem;" onclick="exportHistoryCSV()">📥 Descargar CSV / Excel</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">🗑️ Borrar Historial</button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Lote ID</th>
+                            <th>Receta Elaborada</th>
+                            <th class="text-right">Volumen (L)</th>
+                            <th class="text-right">Masa Total (g)</th>
+                            <th class="text-right">Costo Total ($ ARS)</th>
+                            <th class="text-center">ABV Medido</th>
+                            <th class="text-center">pH Medido</th>
+                            <th>Corrector / Notas</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyHistoryMsg" style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.9rem;">
+                No hay lotes registrados todavía. Entrá a una receta, ajustá los parámetros y tocá <strong>"💾 Registrar y Guardar Lote Producido"</strong>.
+            </div>
+        </div>
+    </div>
+</main>
+
+<div class="toast-notification" id="toastNotification">
+    ✅ ¡Lote registrado con éxito en el historial!
+</div>
+
+<script>
+    const masterData = [[1, "Clásica Española", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 17.0, 0.0, 65.0, "200.0 g Caramelo Oscuro Estandarizado", 140.0, 0.161], [2, "Rosé Floral", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 762.5, 0.762, 15.0, 0.0, 65.0, "157.5 g Almíbar 2:1 Estandarizado", 105.0, 0.16], [3, "Serrano Aperitivo", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 16.0, 0.0, 65.0, "180.0 g Almíbar 2:1 (+5g Miel)", 120.0, 0.162], [4, "Rivera Italiano", "Vermut (Art. 1113)", "Torrontés / Sav. B. (13.0%)", 750.0, 0.75, 12.0, 0.0, 65.0, "187.5 g Almíbar 2:1 Estandarizado", 125.0, 0.16], [5, "Calamuchita", "Vermut (Art. 1113)", "Blanco Alta Acidez (12.5%)", 750.0, 0.75, 12.5, 0.0, 65.0, "202.5 g Almíbar 2:1 Estandarizado", 135.0, 0.16], [6, "Don Aurelio Vasconia", "Vermut (Art. 1113)", "Ugni/Chenin (75%) + Pinot/Bonarda (25%)", 780.0, 0.78, 0.0, 10.0, 65.0, "145.0 g Almíbar Sidra / Miel", 96.6, 0.155], [7, "Pichincha", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 13.5, 0.0, 65.0, "232.5 g Almíbar 2:1 Estandarizado", 155.0, 0.16], [8, "Italiano Torino / Cinzano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 12.6, 0.0, 65.0, "221.4 g Caramelo Oscuro Estandarizado", 155.0, 0.16], [9, "Aperitivo Tipo Cynar", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 126.0, 489.7, 170.0, "214.3 g Caramelo Oscuro Estandarizado", 150.0, 0.17], [10, "Amargo Obrero Casero", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 130.0, 481.4, 190.0, "198.6 g Caramelo Oscuro Estandarizado", 139.0, 0.184], [11, "Vermut Belgrano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 807.0, 0.807, 18.0, 0.0, 58.0, "107.0 g Jarabe Vino Cocido", 107.0, 0.16]];
+    const recipesData = [{"num": 1, "code": "R01_Clasica", "title": "01 - Clásica Española (Don Aurelio Castizo / España)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco (Artemisia absinthium)", 3.5]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Corteza de Naranja Dulce Seca", 3.0], ["Corteza de Limón Seca", 2.0], ["Canela en Rama", 1.5], ["Clavo de Olor", 0.4]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro (12.5%)", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 17.0, 45.0], ["Caramelo Oscuro Estandarizado", 200.0, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 2, "code": "R02_RoseFloral", "title": "02 - Rosé Floral (Don Aurelio Rosa de Monte / Valle)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.) + Cold Brew Hibiscus", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 2.0], ["Raíz de Angélica", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Flores de Saúco", 1.5], ["Corteza de Limón", 1.0], ["Corteza de Pomelo Rosado", 1.5], ["Vainilla en Vaina", 0.3]], "tintura_target": 65.0, "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 2.5, "g por cada 762.5g de vino blanco"], "ensamblaje": [["Vino Blanco Infusionado con Hibiscus", 762.5, 15.0], ["Alcohol Etílico 96° Directo", 15.0, 45.0], ["Almíbar 2:1 Estandarizado", 157.5, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]]}, {"num": 3, "code": "R03_Serrano", "title": "03 - Serrano Aperitivo (Don Aurelio Champaquí)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 2.5], ["Carqueja Seca", 1.2], ["Salvia Seca", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Peperina Seca", 2.0], ["Corteza de Mandarina Criolla", 2.0], ["Manzanilla Común", 1.5], ["Coriandro (semilla machacada)", 0.5]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 16.0, 45.0], ["Almíbar 2:1 Estandarizado", 180.0, 8.0], ["Miel de Monte Orgánica (en almíbar)", 5.0, 25.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 4, "code": "R04_Rivera", "title": "04 - Rivera Italiano (Don Aurelio Rivera Adriática)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Torrontés / Sauvignon Blanc (13.0% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Genciana", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Naranja Amarga", 2.0], ["Limón Seco", 2.0], ["Manzanilla Romana", 1.5], ["Menta Piperita", 0.8], ["Anís Estrellado", 0.2]], "tintura_target": 65.0, "ensamblaje": [["Vino Torrontés / Sauvignon Blanc (13%)", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 12.0, 45.0], ["Almíbar 2:1 Estandarizado", 187.5, 8.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 5, "code": "R05_Calamuchita", "title": "05 - Calamuchita (Don Aurelio Aguaribay & Poleo)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Alta Acidez (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Carqueja Seca", 0.5], ["Aguaribay (Pimienta Rosa)", 1.2]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Peperina Seca", 2.0], ["Poleo Seco", 1.0], ["Corteza de Naranja Dulce", 2.0], ["Cardamomo", 0.5], ["Romero Seco", 0.4]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco de Alta Acidez", 750.0, 15.0], ["Alcohol Etílico 96° Directo", 12.5, 45.0], ["Almíbar 2:1 Estandarizado", 202.5, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 6, "code": "R06_Vasconia", "title": "06 - Don Aurelio Vasconia (Corte Atlántico & Roble)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Ugni/Chenin (75%) + Pinot Noir/Bonarda (25%)", "fa_temp": "60°C", "fa_time": "2.5 Horas (Fase 1)", "fa_alc": 23.1, "fa_water": 30.0, "fa_botanicos": [["Ajenjo seco", 2.5], ["Raíz de Genciana", 1.5], ["Chips de Roble Francés (Tostado Ligero)", 1.5], ["Canela de Ceylán", 0.3], ["Bayas de Enebro (machacadas)", 1.0], ["Coriandro", 0.5]], "fb_temp": "60°C", "fb_time": "Últimos 45 Min (Fase 2)", "fb_alc": 15.4, "fb_water": 20.0, "fb_botanicos": [["Laurel Seco", 0.6], ["Romero Seco", 0.4], ["Salvia o Tomillo Seco", 0.3], ["Menta Piperita", 0.5], ["Cáscara de Naranja Amarga", 2.0], ["Cáscara de Limón", 1.5]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro (Ugni/Chenin)", 585.0, 15.0], ["Vino Tinto Joven (Pinot Noir/Bonarda)", 195.0, 18.0], ["Tintura Vasca Filtrada", 65.0, 0.0], ["Almíbar de Sidra o Miel de Monte", 145.0, 12.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Agua Filtrada (Ajuste Masa)", 10.0, 1.0]], "cold_brew": null}, {"num": 7, "code": "R07_Pichincha", "title": "07 - Rubino Gran Botánico (Don Aurelio Barrancas)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%) + Cold Brew Hibiscus", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 20.0, "fa_water": 25.9, "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Carqueja Seca", 0.8], ["Madera de Cuasia", 0.3]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 13.3, "fb_water": 17.3, "fb_botanicos": [["Naranja Dulce", 2.5], ["Limón Seco", 1.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Romero Seco", 0.4], ["Salvia Seca", 0.3], ["Raíz de Lirio", 0.5], ["Coriandro", 0.3], ["Cardamomo", 0.1], ["Pimienta de Jamaica", 0.5], ["Hinojo (semilla)", 0.1], ["Anís Estrellado", 0.2]], "tintura_target": 65.0, "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 4.0, "g por cada 750.0g de vino base corte rubino"], "ensamblaje": [["Vino Base Rubino Infusionado", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 13.5, 45.0], ["Almíbar 2:1 Estandarizado", 232.5, 8.0], ["Corrector Cítrico/Málico", 1.5, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]]}, {"num": 8, "code": "R08_Torino", "title": "08 - Italiano Torino (Don Aurelio Gran Torino Riserva)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 20.0, "fa_water": 25.9, "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Chips Roble Francés Tostado Medio", 4.0]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 13.3, "fb_water": 17.3, "fb_botanicos": [["Corteza de Naranja Dulce", 2.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Raíz de Ruibarbo", 1.0]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro", 562.5, 15.0], ["Vino Tinto Malbec Joven", 187.5, 18.0], ["Alcohol Etílico 96° Directo", 12.6, 45.0], ["Caramelo Oscuro Estandarizado", 221.4, 8.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 9, "code": "R09_Cynar", "title": "09 - Aperitivo Tipo Cynar (Don Aurelio Cynara Bitter)", "type": "Amaro / Aperitivo (Art. 1111)", "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 49.5, "fa_water": 64.5, "fa_botanicos": [["Hojas secas de Alcachofa/Alcaucil", 20.0], ["Raíz de Genciana", 2.5], ["Raíz de Ruibarbo", 2.5], ["Cáscara Sagrada", 1.5], ["Madera de Cuasia", 1.0], ["Raíz de Angélica", 1.0]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 33.0, "fb_water": 43.0, "fb_botanicos": [["Corteza de Naranja Amarga", 2.0], ["Canela de Ceylán", 1.0], ["Bayas de Enebro", 1.0], ["Menta Piperita / Peperina", 1.5], ["Coriandro", 0.5], ["Clavo de Olor", 0.2]], "tintura_target": 170.0, "ensamblaje": [["Agua Filtrada Cristalina", 489.7, 1.0], ["Alcohol Etílico 96° Directo", 126.0, 45.0], ["Caramelo Oscuro Estandarizado", 214.3, 8.0], ["Tintura Madre Completa (A+B)", 170.0, 0.0]], "cold_brew": null}, {"num": 10, "code": "R10_AmargoObrero", "title": "10 - Amargo Obrero Casero (Don Aurelio Amaro Rústico)", "type": "Amaro / Aperitivo (Art. 1111)", "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 55.3, "fa_water": 72.1, "fa_botanicos": [["Ajenjo seco", 4.5], ["Carqueja Seca", 3.5], ["Raíz de Genciana", 0.8], ["Té Negro", 0.5], ["Regaliz", 0.5], ["Corteza de Quina", 0.3], ["Coriandro", 0.5]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 36.9, "fb_water": 48.1, "fb_botanicos": [["Corteza de Naranja Dulce", 3.0], ["Muña Muña", 1.5], ["Poleo", 1.0], ["Peperina / Menta Piperita", 1.0], ["Manzanilla Común", 1.5], ["Pimienta de Jamaica", 0.4], ["Anís Estrellado", 0.2]], "tintura_target": 190.0, "ensamblaje": [["Agua Filtrada Cristalina", 481.4, 1.0], ["Alcohol Etílico 96° Directo", 130.0, 45.0], ["Caramelo Oscuro Estandarizado", 198.6, 8.0], ["Tintura Madre Completa (A+B)", 190.0, 0.0]], "cold_brew": null}, {"num": 11, "code": "R11_Belgrano", "title": "11 - Arrope Santafesino / Pago de los Arroyos", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Bonarda (25%) + Jarabe Vino Cocido", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 17.8, "fa_water": 23.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Angélica", 1.5], ["Carqueja Seca", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 11.9, "fb_water": 15.4, "fb_botanicos": [["Flores de Saúco", 2.5], ["Manzanilla Romana", 1.5], ["Cardamomo", 0.5], ["Naranja Amarga", 1.5]], "tintura_target": 58.0, "ensamblaje": [["Vino Blanco Neutro", 605.3, 15.0], ["Vino Tinto Bonarda", 201.7, 18.0], ["Alcohol Etílico 96° Directo", 18.0, 45.0], ["Jarabe de Vino Cocido (107g vino+107g azú->107g)", 107.0, 20.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 58.0, 0.0]], "cold_brew": null}];
+    const STORAGE_KEY = 'DON_AURELIO_BATCH_HISTORY_V1';
+
+    function getHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function saveHistory(history) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        updateHistoryTable();
+    }
+
+    function initApp() {
+        const navTabs = document.getElementById('navTabs');
+        const masterTableBody = document.getElementById('masterTableBody');
+        const masterCardsGrid = document.getElementById('masterCardsGrid');
+        const mainContainer = document.getElementById('mainContainer');
+
+        masterData.forEach((row, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center font-bold">${row[0]}</td>
+                <td><strong>${row[1]}</strong></td>
+                <td><span style="font-size:0.75rem; color: var(--wine); font-weight:600;">${row[2]}</span></td>
+                <td>${row[3]}</td>
+                <td class="text-right font-bold">${row[4].toFixed(1)}</td>
+                <td class="text-center">${(row[5]*100).toFixed(1)}%</td>
+                <td class="text-right">${row[6].toFixed(1)}</td>
+                <td class="text-right">${row[7].toFixed(1)}</td>
+                <td class="text-right font-bold">${row[8].toFixed(1)}</td>
+                <td>${row[9]}</td>
+                <td class="text-right">${row[10].toFixed(1)}</td>
+                <td class="text-center highlight-value">${(row[11]*100).toFixed(1)}%</td>
+                <td class="text-center">
+                    <button class="btn btn-print" style="padding: 3px 8px; font-size: 0.72rem;" onclick="switchTab('${recipesData[idx].code}')">Abrir Ficha</button>
+                </td>
+            `;
+            masterTableBody.appendChild(tr);
+
+            const card = document.createElement('div');
+            card.className = 'master-card-item';
+            card.onclick = () => switchTab(recipesData[idx].code);
+            card.innerHTML = `
+                <span class="badge">${row[2]}</span>
+                <h4>${row[1]}</h4>
+                <p><strong>Base:</strong> ${row[3]}</p>
+                <p><strong>Alcohol:</strong> ${(row[11]*100).toFixed(1)}% ABV | <strong>Tintura:</strong> ${row[8]} g</p>
+            `;
+            masterCardsGrid.appendChild(card);
+        });
+
+        recipesData.forEach((rec, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'nav-tab';
+            btn.id = `btn-${rec.code}`;
+            btn.innerText = `R${rec.num < 10 ? '0' + rec.num : rec.num} ${rec.title.split('(')[0].replace(/^\d+\s*-\s*/, '').trim()}`;
+            btn.onclick = () => switchTab(rec.code);
+            navTabs.appendChild(btn);
+
+            const sheet = document.createElement('div');
+            sheet.id = `tab-${rec.code}`;
+            sheet.className = 'tab-content';
+            sheet.innerHTML = renderRecipeSheet(rec);
+            mainContainer.appendChild(sheet);
+        });
+
+        recipesData.forEach(rec => recalculateRecipe(rec.code));
+        updateHistoryTable();
+    }
+
+    function renderRecipeSheet(rec) {
+        return `
+            <div class="card">
+                <div class="section-header">
+                    <span>Ficha Técnica Operativa: ${rec.title}</span>
+                    <span>${rec.type}</span>
+                </div>
+
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label>Volumen Objetivo (Litros):</label>
+                        <input type="number" step="0.1" min="0.1" value="5.0" id="vol-${rec.code}" oninput="recalculateRecipe('${rec.code}')">
+                    </div>
+                    <div class="control-group">
+                        <label>Lote ID:</label>
+                        <input type="text" value="LOT-${rec.code}-001" id="lot-${rec.code}">
+                    </div>
+                    <div class="control-group">
+                        <label>Fecha de Elaboración:</label>
+                        <input type="date" value="${new Date().toISOString().split('T')[0]}" id="date-${rec.code}">
+                    </div>
+                    <div class="control-group">
+                        <label>Vino Base / Matriz:</label>
+                        <input type="text" value="${rec.base_desc}" disabled style="background-color: #eee; font-size:0.8rem;">
+                    </div>
+                </div>
+
+                <!-- BLOQUE 1: SOUS VIDE -->
+                <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem;">
+                    <span>Bloque 1: Extracción Sous Vide (Solución Hidroalcohólica 50% vol. con +10% margen)</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Frasco</th>
+                                <th>Fase / Botánico</th>
+                                <th>Parámetros</th>
+                                <th class="text-right">g Base (1L)</th>
+                                <th class="text-right">Masa Lote (g)</th>
+                                <th class="text-center">Pesado OK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Frasco A</strong></td>
+                                <td>Alcohol Etílico 96° (Extracción)</td>
+                                <td><em>${rec.fa_temp} / ${rec.fa_time}</em></td>
+                                <td class="text-right">${rec.fa_alc.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fa_alc-${rec.code}">0.0</td>
+                                <td class="checkbox-cell"><input type="checkbox"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frasco A</strong></td>
+                                <td>Agua Filtrada (Extracción)</td>
+                                <td><em>${rec.fa_temp} / ${rec.fa_time}</em></td>
+                                <td class="text-right">${rec.fa_water.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fa_water-${rec.code}">0.0</td>
+                                <td class="checkbox-cell"><input type="checkbox"></td>
+                            </tr>
+                            ${rec.fa_botanicos.map((b, i) => `
+                                <tr>
+                                    <td>Frasco A</td>
+                                    <td>${b[0]}</td>
+                                    <td><em>Carga Leñosa / Amargos</em></td>
+                                    <td class="text-right">${b[1].toFixed(2)}</td>
+                                    <td class="text-right font-bold" id="fa_bot_${i}-${rec.code}">0.00</td>
+                                    <td class="checkbox-cell"><input type="checkbox"></td>
+                                </tr>
+                            `).join('')}
+                            <tr>
+                                <td><strong>Frasco B</strong></td>
+                                <td>Alcohol Etílico 96° (Extracción)</td>
+                                <td><em>${rec.fb_temp} / ${rec.fb_time}</em></td>
+                                <td class="text-right">${rec.fb_alc.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fb_alc-${rec.code}">0.0</td>
+                                <td class="checkbox-cell"><input type="checkbox"></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frasco B</strong></td>
+                                <td>Agua Filtrada (Extracción)</td>
+                                <td><em>${rec.fb_temp} / ${rec.fb_time}</em></td>
+                                <td class="text-right">${rec.fb_water.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fb_water-${rec.code}">0.0</td>
+                                <td class="checkbox-cell"><input type="checkbox"></td>
+                            </tr>
+                            ${rec.fb_botanicos.map((b, i) => `
+                                <tr>
+                                    <td>Frasco B</td>
+                                    <td>${b[0]}</td>
+                                    <td><em>Carga Aromática / Cítrica</em></td>
+                                    <td class="text-right">${b[1].toFixed(2)}</td>
+                                    <td class="text-right font-bold" id="fb_bot_${i}-${rec.code}">0.00</td>
+                                    <td class="checkbox-cell"><input type="checkbox"></td>
+                                </tr>
+                            `).join('')}
+                            ${rec.cold_brew ? `
+                                <tr style="background-color: #fff0f3;">
+                                    <td><strong>Cold Brew</strong></td>
+                                    <td><strong>${rec.cold_brew[0]}</strong></td>
+                                    <td><em>${rec.cold_brew[2]}</em></td>
+                                    <td class="text-right">${rec.cold_brew[1].toFixed(2)}</td>
+                                    <td class="text-right font-bold highlight-value" id="cb_bot-${rec.code}">0.00</td>
+                                    <td class="checkbox-cell"><input type="checkbox"></td>
+                                </tr>
+                            ` : ''}
+                            <tr class="table-summary-row">
+                                <td colspan="3"><strong>TOTAL TINTURA NETA A PESAR (post Choque Térmico Hielo)</strong></td>
+                                <td class="text-right"><strong>${rec.tintura_target.toFixed(1)}</strong></td>
+                                <td class="text-right font-bold highlight-value" id="tintura_target-${rec.code}">0.0</td>
+                                <td class="checkbox-cell"><input type="checkbox"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- BLOQUE 2: ENSAMBLAJE FINAL -->
+                <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem; margin-top: 20px;">
+                    <span>Bloque 2: Matriz de Ensamblaje Final en Balanza y Costeo ($ ARS)</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Insumo / Componente</th>
+                                <th class="text-right">Precio $ / kg (ARS)</th>
+                                <th class="text-right">g Base (1L)</th>
+                                <th class="text-right">Masa Lote (g)</th>
+                                <th class="text-right">Costo Lote ($ ARS)</th>
+                                <th class="text-center">Pesado OK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rec.ensamblaje.map((item, i) => `
+                                <tr>
+                                    <td class="text-center">${i+1}</td>
+                                    <td><strong>${item[0]}</strong></td>
+                                    <td class="text-right">
+                                        <input type="number" step="0.5" class="cost-input" value="${item[2]}" id="cost_input_${i}-${rec.code}" oninput="recalculateRecipe('${rec.code}')">
+                                    </td>
+                                    <td class="text-right">${item[1].toFixed(1)}</td>
+                                    <td class="text-right font-bold highlight-value" id="ens_mass_${i}-${rec.code}">0.0</td>
+                                    <td class="text-right font-bold" id="ens_cost_${i}-${rec.code}">$ 0.00</td>
+                                    <td class="checkbox-cell"><input type="checkbox"></td>
+                                </tr>
+                            `).join('')}}
+                            <tr class="table-summary-row">
+                                <td colspan="3" class="text-right"><strong>TOTALES LOTE:</strong></td>
+                                <td class="text-right font-bold" id="tot_base_mass-${rec.code}">0.0</td>
+                                <td class="text-right font-bold highlight-value" id="tot_lot_mass-${rec.code}">0.0</td>
+                                <td class="text-right font-bold highlight-value" id="tot_lot_cost-${rec.code}">$ 0.00</td>
+                                <td class="text-center"><strong>Lote OK</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- BLOQUE 3: PROTOCOLO TÉRMICO -->
+                <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem; margin-top: 20px;">
+                    <span>Bloque 3: Protocolo Térmico, Filtración y Estabilización</span>
+                </div>
+                <div class="protocol-list">
+                    <div class="protocol-item">
+                        <div class="protocol-info">
+                            <strong>1. Choque Térmico (Condensación por Reflujo)</strong>
+                            <p>Sumergir los frascos herméticos en baño de agua con abundante hielo por 15 a 20 minutos antes de abrir.</p>
+                        </div>
+                        <label class="checkbox-cell" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:0.8rem;">
+                            <input type="checkbox"> Cumplido
+                        </label>
+                    </div>
+                    <div class="protocol-item">
+                        <div class="protocol-info">
+                            <strong>2. Bloque de Frío (-4°C por 48 horas)</strong>
+                            <p>Reposo continuo a -4°C para forzar la precipitación completa de bitartratos, ceras y polifenoles.</p>
+                        </div>
+                        <label class="checkbox-cell" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:0.8rem;">
+                            <input type="checkbox"> Cumplido
+                        </label>
+                    </div>
+                    <div class="protocol-item">
+                        <div class="protocol-info">
+                            <strong>3. Filtración Cronométrica en Frío</strong>
+                            <p>Filtrar por papel o malla inmediatamente al retirar de la heladera/freezer antes de que suba la temperatura.</p>
+                        </div>
+                        <label class="checkbox-cell" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:0.8rem;">
+                            <input type="checkbox"> Cumplido
+                        </label>
+                    </div>
+                    <div class="protocol-item">
+                        <div class="protocol-info">
+                            <strong>4. Maduración Cava Anaeróbica (12°C - 15°C / 30 Días)</strong>
+                            <p>Guarda en oscuridad con espacio de cabeza mínimo para la esterificación armónica de alcoholes y ácidos.</p>
+                        </div>
+                        <label class="checkbox-cell" style="display:flex; align-items:center; gap:6px; font-weight:600; font-size:0.8rem;">
+                            <input type="checkbox"> Cumplido
+                        </label>
+                    </div>
+                </div>
+
+                <!-- BLOQUE 4: QC & CATA -->
+                <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem; margin-top: 20px;">
+                    <span>Bloque 4: Cata de Laboratorio y Corrección en Copa ISO (100 ml)</span>
+                </div>
+                <div class="qc-grid">
+                    <div class="qc-box">
+                        <label>ABV Real Medido (% vol.):</label>
+                        <input type="number" step="0.1" id="qc_abv-${rec.code}" placeholder="Ej: 16.0 %">
+                    </div>
+                    <div class="qc-box">
+                        <label>pH Medido en Laboratorio:</label>
+                        <input type="number" step="0.05" id="qc_ph-${rec.code}" placeholder="Ej: 3.45">
+                    </div>
+                    <div class="qc-box">
+                        <label>Tintura de Corrección Aplicada:</label>
+                        <select id="qc_tint-${rec.code}">
+                            <option value="Ninguna (Equilibrio Óptimo)">Ninguna (Equilibrio Óptimo)</option>
+                            <option value="Tintura 1 (Ajenjo - Estructura)">Tintura 1 (Ajenjo - Estructura)</option>
+                            <option value="Tintura 2 (Genciana - Amargor Seco)">Tintura 2 (Genciana - Amargor Seco)</option>
+                            <option value="Tintura 3 (Peperina - Frescura)">Tintura 3 (Peperina - Frescura)</option>
+                            <option value="Tintura 4 (Naranja/Pomelo - Cítrico)">Tintura 4 (Naranja/Pomelo - Cítrico)</option>
+                            <option value="Tintura 5 (Roble/Vainilla - Redondeo)">Tintura 5 (Roble/Vainilla - Redondeo)</option>
+                            <option value="Solución Ácido Málico 10%">Solución Ácido Málico 10%</option>
+                        </select>
+                    </div>
+                    <div class="qc-box">
+                        <label>Dosis de Corrector / Notas:</label>
+                        <input type="text" id="qc_notes-${rec.code}" placeholder="Ej: 15 gotas/L">
+                    </div>
+                </div>
+
+                <div class="batch-actions-footer">
+                    <button class="btn btn-save-batch" onclick="registerBatch('${rec.code}')">
+                        💾 Registrar y Guardar Lote Producido
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function recalculateRecipe(code) {
+        const rec = recipesData.find(r => r.code === code);
+        if (!rec) return;
+
+        const vol = parseFloat(document.getElementById(`vol-${code}`).value) || 1.0;
+
+        document.getElementById(`fa_alc-${code}`).innerText = (rec.fa_alc * vol).toFixed(1);
+        document.getElementById(`fa_water-${code}`).innerText = (rec.fa_water * vol).toFixed(1);
+        rec.fa_botanicos.forEach((b, i) => {
+            document.getElementById(`fa_bot_${i}-${code}`).innerText = (b[1] * vol).toFixed(2);
+        });
+
+        document.getElementById(`fb_alc-${code}`).innerText = (rec.fb_alc * vol).toFixed(1);
+        document.getElementById(`fb_water-${code}`).innerText = (rec.fb_water * vol).toFixed(1);
+        rec.fb_botanicos.forEach((b, i) => {
+            document.getElementById(`fb_bot_${i}-${code}`).innerText = (b[1] * vol).toFixed(2);
+        });
+
+        if (rec.cold_brew) {
+            document.getElementById(`cb_bot-${code}`).innerText = (rec.cold_brew[1] * vol).toFixed(2);
+        }
+
+        document.getElementById(`tintura_target-${code}`).innerText = (rec.tintura_target * vol).toFixed(1);
+
+        let totBaseMass = 0;
+        let totLotMass = 0;
+        let totLotCost = 0;
+
+        rec.ensamblaje.forEach((item, i) => {
+            const unitG = item[1];
+            const lotG = unitG * vol;
+            const priceKg = parseFloat(document.getElementById(`cost_input_${i}-${code}`).value) || 0.0;
+            const itemCost = (lotG / 1000.0) * priceKg;
+
+            document.getElementById(`ens_mass_${i}-${code}`).innerText = lotG.toFixed(1);
+            document.getElementById(`ens_cost_${i}-${code}`).innerText = `$ ${itemCost.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            totBaseMass += unitG;
+            totLotMass += lotG;
+            totLotCost += itemCost;
+        });
+
+        document.getElementById(`tot_base_mass-${code}`).innerText = totBaseMass.toFixed(1);
+        document.getElementById(`tot_lot_mass-${code}`).innerText = totLotMass.toFixed(1);
+        document.getElementById(`tot_lot_cost-${code}`).innerText = `$ ${totLotCost.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    function registerBatch(code) {
+        const rec = recipesData.find(r => r.code === code);
+        if (!rec) return;
+
+        const vol = parseFloat(document.getElementById(`vol-${code}`).value) || 1.0;
+        const lotId = document.getElementById(`lot-${code}`).value || `LOT-${code}`;
+        const date = document.getElementById(`date-${code}`).value || new Date().toISOString().split('T')[0];
+        const abv = document.getElementById(`qc_abv-${code}`).value || '—';
+        const ph = document.getElementById(`qc_ph-${code}`).value || '—';
+        const tint = document.getElementById(`qc_tint-${code}`).value || '—';
+        const notes = document.getElementById(`qc_notes-${code}`).value || '';
+        const totMass = document.getElementById(`tot_lot_mass-${code}`).innerText;
+        const totCost = document.getElementById(`tot_lot_cost-${code}`).innerText;
+
+        const batchEntry = {
+            id: Date.now(),
+            date: date,
+            lotId: lotId,
+            recipeCode: rec.code,
+            recipeTitle: rec.title,
+            volume: vol,
+            totMass: totMass,
+            totCost: totCost,
+            abv: abv,
+            ph: ph,
+            corrector: tint,
+            notes: notes
+        };
+
+        const history = getHistory();
+        history.unshift(batchEntry);
+        saveHistory(history);
+
+        showToast(`✅ Lote ${lotId} (${rec.title.split('(')[0]}) guardado en el historial.`);
+    }
+
+    function updateHistoryTable() {
+        const history = getHistory();
+        const historyCount = document.getElementById('historyCount');
+        const historyTableBody = document.getElementById('historyTableBody');
+        const emptyHistoryMsg = document.getElementById('emptyHistoryMsg');
+
+        if (historyCount) historyCount.innerText = history.length;
+        if (!historyTableBody) return;
+
+        historyTableBody.innerHTML = '';
+        if (history.length === 0) {
+            emptyHistoryMsg.style.display = 'block';
+            return;
+        } else {
+            emptyHistoryMsg.style.display = 'none';
+        }
+
+        history.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.date}</strong></td>
+                <td><span class="badge" style="background-color:#e2e3e5; padding:3px 6px; border-radius:3px; font-weight:700;">${item.lotId}</span></td>
+                <td><strong>${item.recipeTitle.split('(')[0]}</strong></td>
+                <td class="text-right font-bold">${item.volume.toFixed(1)} L</td>
+                <td class="text-right">${item.totMass} g</td>
+                <td class="text-right font-bold highlight-value">${item.totCost}</td>
+                <td class="text-center font-bold">${item.abv !== '—' ? item.abv + '%' : '—'}</td>
+                <td class="text-center">${item.ph}</td>
+                <td><small>${item.corrector} ${item.notes ? '(' + item.notes + ')' : ''}</small></td>
+                <td class="text-center">
+                    <button class="btn btn-danger" onclick="deleteBatch(${item.id})">Eliminar</button>
+                </td>
+            `;
+            historyTableBody.appendChild(tr);
+        });
+    }
+
+    function deleteBatch(id) {
+        if (!confirm("¿Deseas eliminar este registro del historial?")) return;
+        let history = getHistory();
+        history = history.filter(b => b.id !== id);
+        saveHistory(history);
+    }
+
+    function clearHistory() {
+        if (!confirm("¿Seguro que deseas vaciar TODO el historial de producción?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        updateHistoryTable();
+    }
+
+    function exportHistoryCSV() {
+        const history = getHistory();
+        if (history.length === 0) {
+            alert("No hay lotes en el historial para exportar.");
+            return;
+        }
+
+        let csv = "Fecha,Lote ID,Receta,Volumen (L),Masa Total (g),Costo Total (ARS),ABV Medido,pH Medido,Corrector,Notas\n";
+        history.forEach(h => {
+            csv += `"${h.date}","${h.lotId}","${h.recipeTitle.replace(/"/g, '""')}","${h.volume}","${h.totMass}","${h.totCost}","${h.abv}","${h.ph}","${h.corrector}","${h.notes}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Historial_Lotes_DonAurelio_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastNotification');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3500);
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+        const targetSheet = document.getElementById(`tab-${tabId}`);
+        if (targetSheet) targetSheet.classList.add('active');
+
+        const activeBtn = document.getElementById(`btn-${tabId}`) || document.querySelector('.nav-tab');
+        if (activeBtn) activeBtn.classList.add('active');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetCurrentTab() {
+        const activeTab = document.querySelector('.tab-content.active');
+        if (activeTab && activeTab.id.startsWith('tab-R')) {
+            const code = activeTab.id.replace('tab-', '');
+            document.getElementById(`vol-${code}`).value = 5.0;
+            recalculateRecipe(code);
+        }
+    }
+
+    window.onload = initApp;
+</script>
+
+</body>
+</html>
