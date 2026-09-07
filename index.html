@@ -19,6 +19,7 @@
             --input-highlight: #fff9e6;
             --success-color: #2e7d32;
             --danger-color: #c62828;
+            --info-color: #0284c7;
         }
 
         * {
@@ -111,6 +112,7 @@
             background-color: #2a3b2c;
             color: #d2f0d4;
             border-color: #3e5a41;
+            margin-left: auto;
         }
         .nav-tab.tab-history.active {
             background-color: var(--success-color);
@@ -161,6 +163,20 @@
             letter-spacing: 0.3px;
         }
 
+        .edit-banner {
+            display: none;
+            background-color: #e0f2fe;
+            border: 2px solid var(--info-color);
+            color: #0369a1;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
         .controls-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -170,6 +186,19 @@
             padding: 16px;
             border-radius: 6px;
             margin-bottom: 20px;
+        }
+
+        .master-controls-bar {
+            background-color: #fdfbf7;
+            border: 2px solid var(--gold-accent);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .control-group {
@@ -185,7 +214,7 @@
             text-transform: uppercase;
         }
 
-        .control-group input {
+        .control-group input, .control-group textarea {
             padding: 8px 12px;
             border: 1.5px solid var(--border-color);
             border-radius: 4px;
@@ -195,7 +224,7 @@
             color: var(--burgundy);
         }
 
-        .control-group input:focus {
+        .control-group input:focus, .control-group textarea:focus {
             outline: none;
             border-color: var(--wine);
             box-shadow: 0 0 0 3px rgba(139, 38, 62, 0.15);
@@ -324,12 +353,13 @@
             margin-bottom: 4px;
         }
 
-        .qc-box input, .qc-box select {
+        .qc-box input, .qc-box select, .qc-box textarea {
             width: 100%;
             padding: 6px 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 0.88rem;
+            background-color: #ffffff;
         }
 
         .batch-actions-footer {
@@ -366,6 +396,14 @@
             transform: translateY(-1px);
         }
 
+        .btn-update-batch {
+            background-color: var(--info-color) !important;
+            box-shadow: 0 3px 8px rgba(2, 132, 199, 0.3) !important;
+        }
+        .btn-update-batch:hover {
+            background-color: #0369a1 !important;
+        }
+
         .btn-print {
             background-color: var(--gold-accent);
             color: #ffffff;
@@ -390,6 +428,16 @@
         }
         .btn-danger:hover {
             background-color: #9b1c1c;
+        }
+
+        .btn-edit {
+            background-color: #475569;
+            color: #ffffff;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+        .btn-edit:hover {
+            background-color: #334155;
         }
 
         .master-cards-grid {
@@ -455,7 +503,7 @@
         }
 
         @media print {
-            header, .nav-container, .btn-print, .btn-reset, .batch-actions-footer, .btn-danger {
+            header, .nav-container, .btn-print, .btn-reset, .batch-actions-footer, .btn-danger, .btn-edit, .master-controls-bar {
                 display: none !important;
             }
             body {
@@ -487,8 +535,8 @@
             <p>Calculadora y Bitácora Operativa con Registro de Lotes (g) | CAA Art. 1111/1113</p>
         </div>
         <div>
-            <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir Ficha / Guardar PDF</button>
-            <button class="btn btn-reset" onclick="resetCurrentTab()">🔄 Restaurar Lote (5L)</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir Ficha / PDF</button>
+            <button class="btn btn-reset" onclick="resetCurrentTab()">🔄 Restaurar a Lote Maestro</button>
         </div>
     </div>
 </header>
@@ -501,11 +549,27 @@
 </div>
 
 <main id="mainContainer">
+    <!-- TABLERO MAESTRO -->
     <div id="tab-master" class="tab-content active">
         <div class="card">
             <div class="section-header">
                 <span>Resumen General de Formulaciones (Lote Patrón 1.0 Litro)</span>
                 <span>11 Recetas Estandarizadas</span>
+            </div>
+
+            <!-- CONTROL MAESTRO DE LOTE GENERAL -->
+            <div class="master-controls-bar">
+                <div>
+                    <strong style="color: var(--burgundy); font-size: 0.95rem; text-transform: uppercase;">⚙️ Configuración Maestra de Lote por Defecto</strong>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                        Modificar este valor actualiza el volumen en todas las planillas de producción y lo guarda de forma permanente.
+                    </p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="globalMasterBatchInput" style="font-size: 0.8rem; font-weight: 700; color: var(--burgundy);">LOTE MAESTRO (L):</label>
+                    <input type="number" id="globalMasterBatchInput" step="0.1" min="0.1" value="5.0" style="width: 100px; padding: 6px 10px; font-size: 1rem; font-weight: 700; border: 1.5px solid var(--border-color); border-radius: 4px; background: var(--input-highlight); text-align: center;">
+                    <button class="btn btn-print" onclick="applyMasterBatchToAll()">⚡ Aplicar a las 11 Recetas</button>
+                </div>
             </div>
             
             <div class="table-responsive">
@@ -540,6 +604,7 @@
         </div>
     </div>
 
+    <!-- TABLA DE HISTORIAL -->
     <div id="tab-history" class="tab-content">
         <div class="card">
             <div class="section-header" style="background-color: #2a3b2c;">
@@ -562,7 +627,8 @@
                             <th class="text-right">Costo Total ($ ARS)</th>
                             <th class="text-center">ABV Medido</th>
                             <th class="text-center">pH Medido</th>
-                            <th>Corrector / Notas</th>
+                            <th>Corrector / Dosis</th>
+                            <th>Comentarios y Bitácora Técnica</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -584,9 +650,221 @@
 <script>
     const masterData = [[1, "Clásica Española (Evolución Madrileña)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 17.0, 0.0, 65.0, "200.0 g Caramelo Oscuro Estandarizado", 140.0, 0.161], [2, "Rosé Floral (Autor Complejo)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%) + Cold Brew Hibiscus", 762.5, 0.762, 15.0, 0.0, 65.0, "157.5 g Almíbar 2:1 Estandarizado", 105.0, 0.16], [3, "Serrano Aperitivo (Monte de Altura)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 16.0, 0.0, 65.0, "180.0 g Almíbar 2:1 (+5g Miel)", 120.0, 0.162], [4, "Rivera Italiano (Piemontés Fino)", "Vermut (Art. 1113)", "Torrontés / Sav. B. (13.0%)", 750.0, 0.75, 12.0, 0.0, 65.0, "187.5 g Almíbar 2:1 Estandarizado", 125.0, 0.16], [5, "Calamuchita (Dry Criollo de Autor)", "Vermut (Art. 1113)", "Blanco Alta Acidez (12.5%)", 750.0, 0.75, 12.5, 0.0, 65.0, "202.5 g Almíbar 2:1 Estandarizado", 135.0, 0.16], [6, "Don Aurelio Vasconia", "Vermut (Art. 1113)", "Ugni/Chenin (75%) + Pinot/Bonarda (25%)", 780.0, 0.78, 0.0, 10.0, 65.0, "145.0 g Almíbar Sidra / Miel", 96.6, 0.155], [7, "Pichincha", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 13.5, 0.0, 65.0, "232.5 g Almíbar 2:1 Estandarizado", 155.0, 0.16], [8, "Italiano Torino / Cinzano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 12.6, 0.0, 65.0, "221.4 g Caramelo Oscuro Estandarizado", 155.0, 0.16], [9, "Aperitivo Tipo Cynar", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 126.0, 489.7, 170.0, "214.3 g Caramelo Oscuro Estandarizado", 150.0, 0.17], [10, "Amargo Obrero Casero", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 130.0, 481.4, 190.0, "198.6 g Caramelo Oscuro Estandarizado", 139.0, 0.184], [11, "Vermut Belgrano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 807.0, 0.807, 18.0, 0.0, 58.0, "107.0 g Jarabe Vino Cocido", 107.0, 0.16]];
     
-    const recipesData = [{"num": 1, "code": "R01_Clasica", "title": "01 - Clásica Española (Evolución Madrileña con Roble & Angélica)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco (Artemisia absinthium)", 3.5], ["Chips de Roble Francés (Tostado Medio)", 1.5], ["Raíz de Angélica", 0.4]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Corteza de Naranja Dulce Seca", 3.0], ["Corteza de Limón Seca", 2.0], ["Canela en Rama", 1.5], ["Clavo de Olor", 0.4], ["Semilla de Coriandro (machacada)", 0.8]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro (12.5%)", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 17.0, 45.0], ["Caramelo Oscuro Estandarizado", 200.0, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 2, "code": "R02_RoseFloral", "title": "02 - Rosé Floral (Autor Complejo con Genciana, Cuasia & Rosa)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.) + Cold Brew Hibiscus", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 2.0], ["Raíz de Angélica", 0.8], ["Raíz de Genciana", 0.5], ["Madera de Cuasia", 0.3]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Flores de Saúco", 1.5], ["Pétalos de Rosa o Jazmín seco", 0.5], ["Corteza de Limón", 1.0], ["Corteza de Pomelo Rosado", 1.5], ["Pimienta Rosa / Aguaribay", 0.2], ["Vainilla en Vaina", 0.3]], "tintura_target": 65.0, "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 2.5, "g por cada 762.5g de vino blanco"], "ensamblaje": [["Vino Blanco Infusionado con Hibiscus", 762.5, 15.0], ["Alcohol Etílico 96° Directo", 15.0, 45.0], ["Almíbar 2:1 Estandarizado", 157.5, 8.0], ["Ácido Málico (Tensión en Ensamblaje)", 0.8, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]]}, {"num": 3, "code": "R03_Serrano", "title": "03 - Serrano Aperitivo (Monte de Altura con Genciana, Tomillo & Enebro)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Neutro (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 2.5], ["Carqueja Seca", 1.2], ["Raíz de Genciana", 0.6], ["Salvia Seca", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Peperina Seca", 2.0], ["Tomillo o Salvia Serrana", 0.6], ["Bayas de Enebro (machacadas)", 0.5], ["Corteza de Mandarina Criolla", 2.0], ["Manzanilla Común", 1.5], ["Coriandro (semilla machacada)", 0.5]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 16.0, 45.0], ["Almíbar 2:1 Estandarizado", 180.0, 8.0], ["Miel de Monte Orgánica (en almíbar)", 5.0, 25.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 4, "code": "R04_Rivera", "title": "04 - Rivera Italiano (Piemontés Fino con Lirio, Roble & Cardamomo)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Torrontés / Sauvignon Blanc (13.0% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Genciana", 0.8], ["Raíz de Lirio (Iris germanica)", 0.5], ["Chips de Roble Francés (Tostado Ligero)", 1.0]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Naranja Amarga", 2.0], ["Limón Seco", 1.6], ["Corteza de Pomelo Blanco seco", 0.4], ["Manzanilla Romana", 1.5], ["Menta Piperita", 0.8], ["Semillas de Cardamomo (abiertas)", 0.3], ["Anís Estrellado", 0.2]], "tintura_target": 65.0, "ensamblaje": [["Vino Torrontés / Sauvignon Blanc (13%)", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 12.0, 45.0], ["Almíbar 2:1 Estandarizado", 187.5, 8.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 5, "code": "R05_Calamuchita", "title": "05 - Calamuchita (Dry Criollo de Autor con Roble, Angélica & Laurel)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Vino Blanco Alta Acidez (12.5% vol.)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 18.7, "fa_water": 24.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Carqueja Seca", 0.5], ["Aguaribay (Pimienta Rosa)", 1.2], ["Raíz de Angélica", 0.6], ["Chips de Roble Francés (Tostado Ligero)", 1.5]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 12.5, "fb_water": 16.2, "fb_botanicos": [["Peperina Seca", 2.0], ["Poleo Seco", 1.0], ["Corteza de Naranja Dulce", 2.0], ["Cardamomo", 0.5], ["Romero Seco", 0.4], ["Laurel Seco", 0.4], ["Semillas de Hinojo", 0.3]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco de Alta Acidez", 750.0, 15.0], ["Alcohol Etílico 96° Directo", 12.5, 45.0], ["Almíbar 2:1 Estandarizado", 202.5, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 6, "code": "R06_Vasconia", "title": "06 - Don Aurelio Vasconia (Corte Atlántico & Roble)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Ugni/Chenin (75%) + Pinot Noir/Bonarda (25%)", "fa_temp": "60°C", "fa_time": "2.5 Horas (Fase 1)", "fa_alc": 23.1, "fa_water": 30.0, "fa_botanicos": [["Ajenjo seco", 2.5], ["Raíz de Genciana", 1.5], ["Chips de Roble Francés (Tostado Ligero)", 1.5], ["Canela de Ceylán", 0.3], ["Bayas de Enebro (machacadas)", 1.0], ["Coriandro", 0.5]], "fb_temp": "60°C", "fb_time": "Últimos 45 Min (Fase 2)", "fb_alc": 15.4, "fb_water": 20.0, "fb_botanicos": [["Laurel Seco", 0.6], ["Romero Seco", 0.4], ["Salvia o Tomillo Seco", 0.3], ["Menta Piperita", 0.5], ["Cáscara de Naranja Amarga", 2.0], ["Cáscara de Limón", 1.5]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro (Ugni/Chenin)", 585.0, 15.0], ["Vino Tinto Joven (Pinot Noir/Bonarda)", 195.0, 18.0], ["Tintura Vasca Filtrada", 65.0, 0.0], ["Almíbar de Sidra o Miel de Monte", 145.0, 12.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Agua Filtrada (Ajuste Masa)", 10.0, 1.0]], "cold_brew": null}, {"num": 7, "code": "R07_Pichincha", "title": "07 - Rubino Gran Botánico (Don Aurelio Barrancas)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%) + Cold Brew Hibiscus", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 20.0, "fa_water": 25.9, "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Carqueja Seca", 0.8], ["Madera de Cuasia", 0.3]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 13.3, "fb_water": 17.3, "fb_botanicos": [["Naranja Dulce", 2.5], ["Limón Seco", 1.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Romero Seco", 0.4], ["Salvia Seca", 0.3], ["Raíz de Lirio", 0.5], ["Coriandro", 0.3], ["Cardamomo", 0.1], ["Pimienta de Jamaica", 0.5], ["Hinojo (semilla)", 0.1], ["Anís Estrellado", 0.2]], "tintura_target": 65.0, "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 4.0, "g por cada 750.0g de vino base corte rubino"], "ensamblaje": [["Vino Base Rubino Infusionado", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 13.5, 45.0], ["Almíbar 2:1 Estandarizado", 232.5, 8.0], ["Corrector Cítrico/Málico", 1.5, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 8, "code": "R08_Torino", "title": "08 - Italiano Torino (Don Aurelio Gran Torino Riserva)", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 20.0, "fa_water": 25.9, "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Chips Roble Francés Tostado Medio", 4.0]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 13.3, "fb_water": 17.3, "fb_botanicos": [["Corteza de Naranja Dulce", 2.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Raíz de Ruibarbo", 1.0]], "tintura_target": 65.0, "ensamblaje": [["Vino Blanco Neutro", 562.5, 15.0], ["Vino Tinto Malbec Joven", 187.5, 18.0], ["Alcohol Etílico 96° Directo", 12.6, 45.0], ["Caramelo Oscuro Estandarizado", 221.4, 8.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]], "cold_brew": null}, {"num": 9, "code": "R09_Cynar", "title": "09 - Aperitivo Tipo Cynar (Don Aurelio Cynara Bitter)", "type": "Amaro / Aperitivo (Art. 1111)", "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 49.5, "fa_water": 64.5, "fa_botanicos": [["Hojas secas de Alcachofa/Alcaucil", 20.0], ["Raíz de Genciana", 2.5], ["Raíz de Ruibarbo", 2.5], ["Cáscara Sagrada", 1.5], ["Madera de Cuasia", 1.0], ["Raíz de Angélica", 1.0]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 33.0, "fb_water": 43.0, "fb_botanicos": [["Corteza de Naranja Amarga", 2.0], ["Canela de Ceylán", 1.0], ["Bayas de Enebro", 1.0], ["Menta Piperita / Peperina", 1.5], ["Coriandro", 0.5], ["Clavo de Olor", 0.2]], "tintura_target": 170.0, "ensamblaje": [["Agua Filtrada Cristalina", 489.7, 1.0], ["Alcohol Etílico 96° Directo", 126.0, 45.0], ["Caramelo Oscuro Estandarizado", 214.3, 8.0], ["Tintura Madre Completa (A+B)", 170.0, 0.0]], "cold_brew": null}, {"num": 10, "code": "R10_AmargoObrero", "title": "10 - Amargo Obrero Casero (Don Aurelio Amaro Rústico)", "type": "Amaro / Aperitivo (Art. 1111)", "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 55.3, "fa_water": 72.1, "fa_botanicos": [["Ajenjo seco", 4.5], ["Carqueja Seca", 3.5], ["Raíz de Genciana", 0.8], ["Té Negro", 0.5], ["Regaliz", 0.5], ["Corteza de Quina", 0.3], ["Coriandro", 0.5]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 36.9, "fb_water": 48.1, "fb_botanicos": [["Corteza de Naranja Dulce", 3.0], ["Muña Muña", 1.5], ["Poleo", 1.0], ["Peperina / Menta Piperita", 1.0], ["Manzanilla Común", 1.5], ["Pimienta de Jamaica", 0.4], ["Anís Estrellado", 0.2]], "tintura_target": 190.0, "ensamblaje": [["Agua Filtrada Cristalina", 481.4, 1.0], ["Alcohol Etílico 96° Directo", 130.0, 45.0], ["Caramelo Oscuro Estandarizado", 198.6, 8.0], ["Tintura Madre Completa (A+B)", 190.0, 0.0]], "cold_brew": null}, {"num": 11, "code": "R11_Belgrano", "title": "11 - Arrope Santafesino / Pago de los Arroyos", "type": "Vermut (CAA Art. 1113)", "base_desc": "Blanco Neutro (75%) + Tinto Bonarda (25%) + Jarabe Vino Cocido", "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_alc": 17.8, "fa_water": 23.2, "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Angélica", 1.5], ["Carqueja Seca", 0.8]], "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_alc": 11.9, "fb_water": 15.4, "fb_botanicos": [["Flores de Saúco", 2.5], ["Manzanilla Romana", 1.5], ["Cardamomo", 0.5], ["Naranja Amarga", 1.5]], "tintura_target": 58.0, "ensamblaje": [["Vino Blanco Neutro", 605.3, 15.0], ["Vino Tinto Bonarda", 201.7, 18.0], ["Alcohol Etílico 96° Directo", 18.0, 45.0], ["Jarabe de Vino Cocido (107g vino+107g azú->107g)", 107.0, 20.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 58.0, 0.0]], "cold_brew": null}];
+    // TODAS LAS RECETAS ACTUALIZADAS CON MASA CONSOLIDADA DE SOLUCIÓN HIDROALCOHÓLICA 50% VOL.
+    const recipesData = [
+      {
+        "num": 1,
+        "code": "R01_Clasica",
+        "title": "01 - Clásica Española (Evolución Madrileña con Roble & Angélica)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Vino Blanco Neutro (12.5% vol.)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 42.9,
+        "fa_botanicos": [["Ajenjo seco (Artemisia absinthium)", 3.5], ["Chips de Roble Francés (Tostado Medio)", 1.5], ["Raíz de Angélica", 0.4]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 28.7,
+        "fb_botanicos": [["Corteza de Naranja Dulce Seca", 3.0], ["Corteza de Limón Seca", 2.0], ["Canela en Rama", 1.5], ["Clavo de Olor", 0.4], ["Semilla de Coriandro (machacada)", 0.8]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Blanco Neutro (12.5%)", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 17.0, 45.0], ["Caramelo Oscuro Estandarizado", 200.0, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 2,
+        "code": "R02_RoseFloral",
+        "title": "02 - Rosé Floral (Autor Complejo con Genciana, Cuasia & Rosa)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Vino Blanco Neutro (12.5% vol.) + Cold Brew Hibiscus",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 42.9,
+        "fa_botanicos": [["Ajenjo seco", 2.0], ["Raíz de Angélica", 0.8], ["Raíz de Genciana", 0.5], ["Madera de Cuasia", 0.3]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 28.7,
+        "fb_botanicos": [["Flores de Saúco", 1.5], ["Pétalos de Rosa o Jazmín seco", 0.5], ["Corteza de Limón", 1.0], ["Corteza de Pomelo Rosado", 1.5], ["Pimienta Rosa / Aguaribay", 0.2], ["Vainilla en Vaina", 0.3]],
+        "tintura_target": 65.0,
+        "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 2.5, "g por cada 762.5g de vino blanco"],
+        "ensamblaje": [["Vino Blanco Infusionado con Hibiscus", 762.5, 15.0], ["Alcohol Etílico 96° Directo", 15.0, 45.0], ["Almíbar 2:1 Estandarizado", 157.5, 8.0], ["Ácido Málico (Tensión en Ensamblaje)", 0.8, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]]
+      },
+      {
+        "num": 3,
+        "code": "R03_Serrano",
+        "title": "03 - Serrano Aperitivo (Monte de Altura con Genciana, Tomillo & Enebro)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Vino Blanco Neutro (12.5% vol.)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 42.9,
+        "fa_botanicos": [["Ajenjo seco", 2.5], ["Carqueja Seca", 1.2], ["Raíz de Genciana", 0.6], ["Salvia Seca", 0.8]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 28.7,
+        "fb_botanicos": [["Peperina Seca", 2.0], ["Tomillo o Salvia Serrana", 0.6], ["Bayas de Enebro (machacadas)", 0.5], ["Corteza de Mandarina Criolla", 2.0], ["Manzanilla Común", 1.5], ["Coriandro (semilla machacada)", 0.5]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Blanco Neutro", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 16.0, 45.0], ["Almíbar 2:1 Estandarizado", 180.0, 8.0], ["Miel de Monte Orgánica (en almíbar)", 5.0, 25.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 4,
+        "code": "R04_Rivera",
+        "title": "04 - Rivera Italiano (Piemontés Fino con Lirio, Roble & Cardamomo)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Torrontés / Sauvignon Blanc (13.0% vol.)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 42.9,
+        "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Genciana", 0.8], ["Raíz de Lirio (Iris germanica)", 0.5], ["Chips de Roble Francés (Tostado Ligero)", 1.0]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 28.7,
+        "fb_botanicos": [["Naranja Amarga", 2.0], ["Limón Seco", 1.6], ["Corteza de Pomelo Blanco seco", 0.4], ["Manzanilla Romana", 1.5], ["Menta Piperita", 0.8], ["Semillas de Cardamomo (abiertas)", 0.3], ["Anís Estrellado", 0.2]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Torrontés / Sauvignon Blanc (13%)", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 12.0, 45.0], ["Almíbar 2:1 Estandarizado", 187.5, 8.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 5,
+        "code": "R05_Calamuchita",
+        "title": "05 - Calamuchita (Dry Criollo de Autor con Roble, Angélica & Laurel)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Vino Blanco Alta Acidez (12.5% vol.)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 42.9,
+        "fa_botanicos": [["Ajenjo seco", 3.0], ["Carqueja Seca", 0.5], ["Aguaribay (Pimienta Rosa)", 1.2], ["Raíz de Angélica", 0.6], ["Chips de Roble Francés (Tostado Ligero)", 1.5]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 28.7,
+        "fb_botanicos": [["Peperina Seca", 2.0], ["Poleo Seco", 1.0], ["Corteza de Naranja Dulce", 2.0], ["Cardamomo", 0.5], ["Romero Seco", 0.4], ["Laurel Seco", 0.4], ["Semillas de Hinojo", 0.3]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Blanco de Alta Acidez", 750.0, 15.0], ["Alcohol Etílico 96° Directo", 12.5, 45.0], ["Almíbar 2:1 Estandarizado", 202.5, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 6,
+        "code": "R06_Vasconia",
+        "title": "06 - Don Aurelio Vasconia (Corte Atlántico & Roble)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Ugni/Chenin (75%) + Pinot Noir/Bonarda (25%)",
+        "fa_temp": "60°C",
+        "fa_time": "2.5 Horas (Fase 1)",
+        "fa_hidro": 53.1,
+        "fa_botanicos": [["Ajenjo seco", 2.5], ["Raíz de Genciana", 1.5], ["Chips de Roble Francés (Tostado Ligero)", 1.5], ["Canela de Ceylán", 0.3], ["Bayas de Enebro (machacadas)", 1.0], ["Coriandro", 0.5]],
+        "fb_temp": "60°C",
+        "fb_time": "Últimos 45 Min (Fase 2)",
+        "fb_hidro": 35.4,
+        "fb_botanicos": [["Laurel Seco", 0.6], ["Romero Seco", 0.4], ["Salvia o Tomillo Seco", 0.3], ["Menta Piperita", 0.5], ["Cáscara de Naranja Amarga", 2.0], ["Cáscara de Limón", 1.5]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Blanco Neutro (Ugni/Chenin)", 585.0, 15.0], ["Vino Tinto Joven (Pinot Noir/Bonarda)", 195.0, 18.0], ["Tintura Vasca Filtrada", 65.0, 0.0], ["Almíbar de Sidra o Miel de Monte", 145.0, 12.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Agua Filtrada (Ajuste Masa)", 10.0, 1.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 7,
+        "code": "R07_Pichincha",
+        "title": "07 - Rubino Gran Botánico (Don Aurelio Barrancas)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%) + Cold Brew Hibiscus",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 45.9,
+        "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Carqueja Seca", 0.8], ["Madera de Cuasia", 0.3]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 30.6,
+        "fb_botanicos": [["Naranja Dulce", 2.5], ["Limón Seco", 1.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Romero Seco", 0.4], ["Salvia Seca", 0.3], ["Raíz de Lirio", 0.5], ["Coriandro", 0.3], ["Cardamomo", 0.1], ["Pimienta de Jamaica", 0.5], ["Hinojo (semilla)", 0.1], ["Anís Estrellado", 0.2]],
+        "tintura_target": 65.0,
+        "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 4.0, "g por cada 750.0g de vino base corte rubino"],
+        "ensamblaje": [["Vino Base Rubino Infusionado", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 13.5, 45.0], ["Almíbar 2:1 Estandarizado", 232.5, 8.0], ["Corrector Cítrico/Málico", 1.5, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]]
+      },
+      {
+        "num": 8,
+        "code": "R08_Torino",
+        "title": "08 - Italiano Torino (Don Aurelio Gran Torino Riserva)",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 45.9,
+        "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Chips Roble Francés Tostado Medio", 4.0]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 30.6,
+        "fb_botanicos": [["Corteza de Naranja Dulce", 2.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Raíz de Ruibarbo", 1.0]],
+        "tintura_target": 65.0,
+        "ensamblaje": [["Vino Blanco Neutro", 562.5, 15.0], ["Vino Tinto Malbec Joven", 187.5, 18.0], ["Alcohol Etílico 96° Directo", 12.6, 45.0], ["Caramelo Oscuro Estandarizado", 221.4, 8.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 9,
+        "code": "R09_Cynar",
+        "title": "09 - Aperitivo Tipo Cynar (Don Aurelio Cynara Bitter)",
+        "type": "Amaro / Aperitivo (Art. 1111)",
+        "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 114.0,
+        "fa_botanicos": [["Hojas secas de Alcachofa/Alcaucil", 20.0], ["Raíz de Genciana", 2.5], ["Raíz de Ruibarbo", 2.5], ["Cáscara Sagrada", 1.5], ["Madera de Cuasia", 1.0], ["Raíz de Angélica", 1.0]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 76.0,
+        "fb_botanicos": [["Corteza de Naranja Amarga", 2.0], ["Canela de Ceylán", 1.0], ["Bayas de Enebro", 1.0], ["Menta Piperita / Peperina", 1.5], ["Coriandro", 0.5], ["Clavo de Olor", 0.2]],
+        "tintura_target": 170.0,
+        "ensamblaje": [["Agua Filtrada Cristalina", 489.7, 1.0], ["Alcohol Etílico 96° Directo", 126.0, 45.0], ["Caramelo Oscuro Estandarizado", 214.3, 8.0], ["Tintura Madre Completa (A+B)", 170.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 10,
+        "code": "R10_AmargoObrero",
+        "title": "10 - Amargo Obrero Casero (Don Aurelio Amaro Rústico)",
+        "type": "Amaro / Aperitivo (Art. 1111)",
+        "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 127.4,
+        "fa_botanicos": [["Ajenjo seco", 4.5], ["Carqueja Seca", 3.5], ["Raíz de Genciana", 0.8], ["Té Negro", 0.5], ["Regaliz", 0.5], ["Corteza de Quina", 0.3], ["Coriandro", 0.5]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 85.0,
+        "fb_botanicos": [["Corteza de Naranja Dulce", 3.0], ["Muña Muña", 1.5], ["Poleo", 1.0], ["Peperina / Menta Piperita", 1.0], ["Manzanilla Común", 1.5], ["Pimienta de Jamaica", 0.4], ["Anís Estrellado", 0.2]],
+        "tintura_target": 190.0,
+        "ensamblaje": [["Agua Filtrada Cristalina", 481.4, 1.0], ["Alcohol Etílico 96° Directo", 130.0, 45.0], ["Caramelo Oscuro Estandarizado", 198.6, 8.0], ["Tintura Madre Completa (A+B)", 190.0, 0.0]],
+        "cold_brew": null
+      },
+      {
+        "num": 11,
+        "code": "R11_Belgrano",
+        "title": "11 - Arrope Santafesino / Pago de los Arroyos",
+        "type": "Vermut (CAA Art. 1113)",
+        "base_desc": "Blanco Neutro (75%) + Tinto Bonarda (25%) + Jarabe Vino Cocido",
+        "fa_temp": "55°C",
+        "fa_time": "2 Horas (60% Solución)",
+        "fa_hidro": 41.0,
+        "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Angélica", 1.5], ["Carqueja Seca", 0.8]],
+        "fb_temp": "55°C",
+        "fb_time": "45 Minutos (40% Solución)",
+        "fb_hidro": 27.3,
+        "fb_botanicos": [["Flores de Saúco", 2.5], ["Manzanilla Romana", 1.5], ["Cardamomo", 0.5], ["Naranja Amarga", 1.5]],
+        "tintura_target": 58.0,
+        "ensamblaje": [["Vino Blanco Neutro", 605.3, 15.0], ["Vino Tinto Bonarda", 201.7, 18.0], ["Alcohol Etílico 96° Directo", 18.0, 45.0], ["Jarabe de Vino Cocido (107g vino+107g azú->107g)", 107.0, 20.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 58.0, 0.0]],
+        "cold_brew": null
+      }
+    ];
     
     const STORAGE_KEY = 'DON_AURELIO_BATCH_HISTORY_V1';
+    const MASTER_BATCH_KEY = 'DON_AURELIO_MASTER_BATCH_SIZE';
+
+    let currentEditingBatchId = null;
+
+    function getMasterBatchSize() {
+        const val = localStorage.getItem(MASTER_BATCH_KEY);
+        return val ? parseFloat(val) : 5.0;
+    }
+
+    function setMasterBatchSize(val) {
+        localStorage.setItem(MASTER_BATCH_KEY, val.toString());
+    }
 
     function getHistory() {
         try {
@@ -606,6 +884,9 @@
         const masterTableBody = document.getElementById('masterTableBody');
         const masterCardsGrid = document.getElementById('masterCardsGrid');
         const mainContainer = document.getElementById('mainContainer');
+
+        const initialBatch = getMasterBatchSize();
+        document.getElementById('globalMasterBatchInput').value = initialBatch.toFixed(1);
 
         masterData.forEach((row, idx) => {
             const tr = document.createElement('tr');
@@ -640,18 +921,18 @@
             masterCardsGrid.appendChild(card);
         });
 
-        recipesData.forEach((rec, idx) => {
+        recipesData.forEach((rec) => {
             const btn = document.createElement('button');
             btn.className = 'nav-tab';
             btn.id = `btn-${rec.code}`;
             btn.innerText = `R${rec.num < 10 ? '0' + rec.num : rec.num} ${rec.title.split('(')[0].replace(/^\d+\s*-\s*/, '').trim()}`;
             btn.onclick = () => switchTab(rec.code);
-            navTabs.appendChild(btn);
+            navTabs.insertBefore(btn, document.getElementById('btn-history'));
 
             const sheet = document.createElement('div');
             sheet.id = `tab-${rec.code}`;
             sheet.className = 'tab-content';
-            sheet.innerHTML = renderRecipeSheet(rec);
+            sheet.innerHTML = renderRecipeSheet(rec, initialBatch);
             mainContainer.appendChild(sheet);
         });
 
@@ -659,9 +940,34 @@
         updateHistoryTable();
     }
 
-    function renderRecipeSheet(rec) {
+    function applyMasterBatchToAll() {
+        const inputVal = parseFloat(document.getElementById('globalMasterBatchInput').value);
+        if (isNaN(inputVal) || inputVal <= 0) {
+            alert("Por favor, ingrese un volumen numérico válido mayor a 0.");
+            return;
+        }
+
+        setMasterBatchSize(inputVal);
+
+        recipesData.forEach(rec => {
+            const el = document.getElementById(`vol-${rec.code}`);
+            if (el) {
+                el.value = inputVal.toFixed(1);
+                recalculateRecipe(rec.code);
+            }
+        });
+
+        showToast(`✅ Lote maestro fijado en ${inputVal.toFixed(1)} L para todas las recetas.`);
+    }
+
+    function renderRecipeSheet(rec, defaultVol) {
         return `
             <div class="card">
+                <div id="edit-banner-${rec.code}" class="edit-banner">
+                    <span>✏️ Editando lote guardado: <span id="edit-lot-display-${rec.code}"></span>. Al guardar se sobrescribirá el historial.</span>
+                    <button class="btn btn-reset" style="padding: 4px 10px;" onclick="cancelEditingBatch('${rec.code}')">Cancelar Edición</button>
+                </div>
+
                 <div class="section-header">
                     <span>Ficha Técnica Operativa: ${rec.title}</span>
                     <span>${rec.type}</span>
@@ -670,7 +976,7 @@
                 <div class="controls-grid">
                     <div class="control-group">
                         <label>Volumen Objetivo (Litros):</label>
-                        <input type="number" step="0.1" min="0.1" value="5.0" id="vol-${rec.code}" oninput="recalculateRecipe('${rec.code}')">
+                        <input type="number" step="0.1" min="0.1" value="${defaultVol.toFixed(1)}" id="vol-${rec.code}" oninput="recalculateRecipe('${rec.code}')">
                     </div>
                     <div class="control-group">
                         <label>Lote ID:</label>
@@ -686,7 +992,7 @@
                     </div>
                 </div>
 
-                <!-- BLOQUE 1: SOUS VIDE -->
+                <!-- BLOQUE 1: SOUS VIDE (CONSOLIDADOS EN SOLUCIÓN HIDROALCOHÓLICA AL 50%) -->
                 <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem;">
                     <span>Bloque 1: Extracción Sous Vide (Solución Hidroalcohólica 50% vol. con +10% margen)</span>
                 </div>
@@ -705,18 +1011,10 @@
                         <tbody>
                             <tr>
                                 <td><strong>Frasco A</strong></td>
-                                <td>Alcohol Etílico 96° (Extracción)</td>
+                                <td><strong>Solución Hidroalcohólica 50% vol.</strong></td>
                                 <td><em>${rec.fa_temp} / ${rec.fa_time}</em></td>
-                                <td class="text-right">${rec.fa_alc.toFixed(1)}</td>
-                                <td class="text-right font-bold highlight-value" id="fa_alc-${rec.code}">0.0</td>
-                                <td class="checkbox-cell"><input type="checkbox"></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Frasco A</strong></td>
-                                <td>Agua Filtrada (Extracción)</td>
-                                <td><em>${rec.fa_temp} / ${rec.fa_time}</em></td>
-                                <td class="text-right">${rec.fa_water.toFixed(1)}</td>
-                                <td class="text-right font-bold highlight-value" id="fa_water-${rec.code}">0.0</td>
+                                <td class="text-right">${rec.fa_hidro.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fa_hidro-${rec.code}">0.0</td>
                                 <td class="checkbox-cell"><input type="checkbox"></td>
                             </tr>
                             ${rec.fa_botanicos.map((b, i) => `
@@ -731,18 +1029,10 @@
                             `).join('')}
                             <tr>
                                 <td><strong>Frasco B</strong></td>
-                                <td>Alcohol Etílico 96° (Extracción)</td>
+                                <td><strong>Solución Hidroalcohólica 50% vol.</strong></td>
                                 <td><em>${rec.fb_temp} / ${rec.fb_time}</em></td>
-                                <td class="text-right">${rec.fb_alc.toFixed(1)}</td>
-                                <td class="text-right font-bold highlight-value" id="fb_alc-${rec.code}">0.0</td>
-                                <td class="checkbox-cell"><input type="checkbox"></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Frasco B</strong></td>
-                                <td>Agua Filtrada (Extracción)</td>
-                                <td><em>${rec.fb_temp} / ${rec.fb_time}</em></td>
-                                <td class="text-right">${rec.fb_water.toFixed(1)}</td>
-                                <td class="text-right font-bold highlight-value" id="fb_water-${rec.code}">0.0</td>
+                                <td class="text-right">${rec.fb_hidro.toFixed(1)}</td>
+                                <td class="text-right font-bold highlight-value" id="fb_hidro-${rec.code}">0.0</td>
                                 <td class="checkbox-cell"><input type="checkbox"></td>
                             </tr>
                             ${rec.fb_botanicos.map((b, i) => `
@@ -862,7 +1152,7 @@
 
                 <!-- BLOQUE 4: QC & CATA -->
                 <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem; margin-top: 20px;">
-                    <span>Bloque 4: Cata de Laboratorio y Corrección en Copa ISO (100 ml)</span>
+                    <span>Bloque 4: Cata de Laboratorio, Corrección en Copa ISO y Bitácora del Lote</span>
                 </div>
                 <div class="qc-grid">
                     <div class="qc-box">
@@ -886,13 +1176,18 @@
                         </select>
                     </div>
                     <div class="qc-box">
-                        <label>Dosis de Corrector / Notas:</label>
+                        <label>Dosis de Corrector:</label>
                         <input type="text" id="qc_notes-${rec.code}" placeholder="Ej: 15 gotas/L">
                     </div>
                 </div>
 
+                <div class="qc-box" style="margin-top: 14px;">
+                    <label>Comentarios y Observaciones del Lote (Bitácora Técnica):</label>
+                    <textarea id="qc_comments-${rec.code}" rows="3" placeholder="Anotar mermas de filtrado, lote de botánicos, variaciones sensoriales, comportamiento en frío..."></textarea>
+                </div>
+
                 <div class="batch-actions-footer">
-                    <button class="btn btn-save-batch" onclick="registerBatch('${rec.code}')">
+                    <button class="btn btn-save-batch" id="btn-save-${rec.code}" onclick="registerBatch('${rec.code}')">
                         💾 Registrar y Guardar Lote Producido
                     </button>
                 </div>
@@ -904,22 +1199,31 @@
         const rec = recipesData.find(r => r.code === code);
         if (!rec) return;
 
-        const vol = parseFloat(document.getElementById(`vol-${code}`).value) || 1.0;
+        const volEl = document.getElementById(`vol-${code}`);
+        const vol = (volEl && !isNaN(parseFloat(volEl.value)) && parseFloat(volEl.value) > 0) 
+                    ? parseFloat(volEl.value) 
+                    : 1.0;
 
-        document.getElementById(`fa_alc-${code}`).innerText = (rec.fa_alc * vol).toFixed(1);
-        document.getElementById(`fa_water-${code}`).innerText = (rec.fa_water * vol).toFixed(1);
+        // CÁLCULO DE SOLUCIÓN HIDROALCOHÓLICA CONSOLIDADA (FRASCO A Y FRASCO B)
+        const faHidroEl = document.getElementById(`fa_hidro-${code}`);
+        if (faHidroEl) faHidroEl.innerText = (rec.fa_hidro * vol).toFixed(1);
+
         rec.fa_botanicos.forEach((b, i) => {
-            document.getElementById(`fa_bot_${i}-${code}`).innerText = (b[1] * vol).toFixed(2);
+            const el = document.getElementById(`fa_bot_${i}-${code}`);
+            if (el) el.innerText = (b[1] * vol).toFixed(2);
         });
 
-        document.getElementById(`fb_alc-${code}`).innerText = (rec.fb_alc * vol).toFixed(1);
-        document.getElementById(`fb_water-${code}`).innerText = (rec.fb_water * vol).toFixed(1);
+        const fbHidroEl = document.getElementById(`fb_hidro-${code}`);
+        if (fbHidroEl) fbHidroEl.innerText = (rec.fb_hidro * vol).toFixed(1);
+
         rec.fb_botanicos.forEach((b, i) => {
-            document.getElementById(`fb_bot_${i}-${code}`).innerText = (b[1] * vol).toFixed(2);
+            const el = document.getElementById(`fb_bot_${i}-${code}`);
+            if (el) el.innerText = (b[1] * vol).toFixed(2);
         });
 
         if (rec.cold_brew) {
-            document.getElementById(`cb_bot-${code}`).innerText = (rec.cold_brew[1] * vol).toFixed(2);
+            const cbEl = document.getElementById(`cb_bot-${code}`);
+            if (cbEl) cbEl.innerText = (rec.cold_brew[1] * vol).toFixed(2);
         }
 
         document.getElementById(`tintura_target-${code}`).innerText = (rec.tintura_target * vol).toFixed(1);
@@ -931,11 +1235,15 @@
         rec.ensamblaje.forEach((item, i) => {
             const unitG = item[1];
             const lotG = unitG * vol;
-            const priceKg = parseFloat(document.getElementById(`cost_input_${i}-${code}`).value) || 0.0;
+            const costEl = document.getElementById(`cost_input_${i}-${code}`);
+            const priceKg = (costEl && !isNaN(parseFloat(costEl.value))) ? parseFloat(costEl.value) : 0.0;
             const itemCost = (lotG / 1000.0) * priceKg;
 
-            document.getElementById(`ens_mass_${i}-${code}`).innerText = lotG.toFixed(1);
-            document.getElementById(`ens_cost_${i}-${code}`).innerText = `$ ${itemCost.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            const ensMassEl = document.getElementById(`ens_mass_${i}-${code}`);
+            const ensCostEl = document.getElementById(`ens_cost_${i}-${code}`);
+
+            if (ensMassEl) ensMassEl.innerText = lotG.toFixed(1);
+            if (ensCostEl) ensCostEl.innerText = `$ ${itemCost.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
             totBaseMass += unitG;
             totLotMass += lotG;
@@ -946,6 +1254,14 @@
         document.getElementById(`tot_lot_mass-${code}`).innerText = totLotMass.toFixed(1);
         document.getElementById(`tot_lot_cost-${code}`).innerText = `$ ${totLotCost.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
+
+    function resyncAllCalculations() {
+        recipesData.forEach(rec => recalculateRecipe(rec.code));
+    }
+    window.addEventListener('pageshow', resyncAllCalculations);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') resyncAllCalculations();
+    });
 
     function registerBatch(code) {
         const rec = recipesData.find(r => r.code === code);
@@ -958,29 +1274,101 @@
         const ph = document.getElementById(`qc_ph-${code}`).value || '—';
         const tint = document.getElementById(`qc_tint-${code}`).value || '—';
         const notes = document.getElementById(`qc_notes-${code}`).value || '';
+        const comments = document.getElementById(`qc_comments-${code}`).value || '';
         const totMass = document.getElementById(`tot_lot_mass-${code}`).innerText;
         const totCost = document.getElementById(`tot_lot_cost-${code}`).innerText;
 
-        const batchEntry = {
-            id: Date.now(),
-            date: date,
-            lotId: lotId,
-            recipeCode: rec.code,
-            recipeTitle: rec.title,
-            volume: vol,
-            totMass: totMass,
-            totCost: totCost,
-            abv: abv,
-            ph: ph,
-            corrector: tint,
-            notes: notes
-        };
+        let history = getHistory();
 
+        if (currentEditingBatchId) {
+            const idx = history.findIndex(b => b.id === currentEditingBatchId);
+            if (idx !== -1) {
+                history[idx].date = date;
+                history[idx].lotId = lotId;
+                history[idx].recipeCode = rec.code;
+                history[idx].recipeTitle = rec.title;
+                history[idx].volume = vol;
+                history[idx].totMass = totMass;
+                history[idx].totCost = totCost;
+                history[idx].abv = abv;
+                history[idx].ph = ph;
+                history[idx].corrector = tint;
+                history[idx].notes = notes;
+                history[idx].comments = comments;
+                history[idx].modifiedAt = new Date().toISOString();
+
+                saveHistory(history);
+                showToast(`✅ Lote ${lotId} actualizado y regrabado en el historial.`);
+            }
+            cancelEditingBatch(code);
+        } else {
+            const batchEntry = {
+                id: Date.now(),
+                date: date,
+                lotId: lotId,
+                recipeCode: rec.code,
+                recipeTitle: rec.title,
+                volume: vol,
+                totMass: totMass,
+                totCost: totCost,
+                abv: abv,
+                ph: ph,
+                corrector: tint,
+                notes: notes,
+                comments: comments
+            };
+
+            history.unshift(batchEntry);
+            saveHistory(history);
+            showToast(`✅ Lote ${lotId} (${rec.title.split('(')[0]}) guardado en el historial.`);
+            document.getElementById(`qc_comments-${code}`).value = '';
+        }
+    }
+
+    function editBatch(id) {
         const history = getHistory();
-        history.unshift(batchEntry);
-        saveHistory(history);
+        const batch = history.find(b => b.id === id);
+        if (!batch) return;
 
-        showToast(`✅ Lote ${lotId} (${rec.title.split('(')[0]}) guardado en el historial.`);
+        currentEditingBatchId = batch.id;
+        const code = batch.recipeCode;
+
+        switchTab(code);
+
+        document.getElementById(`vol-${code}`).value = batch.volume;
+        document.getElementById(`lot-${code}`).value = batch.lotId;
+        document.getElementById(`date-${code}`).value = batch.date;
+        document.getElementById(`qc_abv-${code}`).value = batch.abv !== '—' ? batch.abv : '';
+        document.getElementById(`qc_ph-${code}`).value = batch.ph !== '—' ? batch.ph : '';
+        if (batch.corrector) document.getElementById(`qc_tint-${code}`).value = batch.corrector;
+        document.getElementById(`qc_notes-${code}`).value = batch.notes || '';
+        document.getElementById(`qc_comments-${code}`).value = batch.comments || '';
+
+        const banner = document.getElementById(`edit-banner-${code}`);
+        const bannerText = document.getElementById(`edit-lot-display-${code}`);
+        const btnSave = document.getElementById(`btn-save-${code}`);
+
+        if (banner) banner.style.display = 'flex';
+        if (bannerText) bannerText.innerText = `${batch.lotId} (${batch.recipeTitle.split('(')[0]})`;
+        if (btnSave) {
+            btnSave.innerText = '💾 Sobrescribir / Actualizar Lote en Historial';
+            btnSave.classList.add('btn-update-batch');
+        }
+
+        recalculateRecipe(code);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEditingBatch(code) {
+        currentEditingBatchId = null;
+        const banner = document.getElementById(`edit-banner-${code}`);
+        const btnSave = document.getElementById(`btn-save-${code}`);
+
+        if (banner) banner.style.display = 'none';
+        if (btnSave) {
+            btnSave.innerText = '💾 Registrar y Guardar Lote Producido';
+            btnSave.classList.remove('btn-update-batch');
+        }
     }
 
     function updateHistoryTable() {
@@ -1012,8 +1400,10 @@
                 <td class="text-center font-bold">${item.abv !== '—' ? item.abv + '%' : '—'}</td>
                 <td class="text-center">${item.ph}</td>
                 <td><small>${item.corrector} ${item.notes ? '(' + item.notes + ')' : ''}</small></td>
-                <td class="text-center">
-                    <button class="btn btn-danger" onclick="deleteBatch(${item.id})">Eliminar</button>
+                <td><small style="color: #475569; font-style: italic;">${item.comments ? item.comments : '<em>Sin comentarios</em>'}</small></td>
+                <td class="text-center" style="white-space: nowrap;">
+                    <button class="btn btn-edit" onclick="editBatch(${item.id})">✏️ Modificar</button>
+                    <button class="btn btn-danger" onclick="deleteBatch(${item.id})">🗑️</button>
                 </td>
             `;
             historyTableBody.appendChild(tr);
@@ -1024,12 +1414,16 @@
         if (!confirm("¿Deseas eliminar este registro del historial?")) return;
         let history = getHistory();
         history = history.filter(b => b.id !== id);
+        if (currentEditingBatchId === id) {
+            currentEditingBatchId = null;
+        }
         saveHistory(history);
     }
 
     function clearHistory() {
         if (!confirm("¿Seguro que deseas vaciar TODO el historial de producción?")) return;
         localStorage.removeItem(STORAGE_KEY);
+        currentEditingBatchId = null;
         updateHistoryTable();
     }
 
@@ -1040,9 +1434,10 @@
             return;
         }
 
-        let csv = "Fecha,Lote ID,Receta,Volumen (L),Masa Total (g),Costo Total (ARS),ABV Medido,pH Medido,Corrector,Notas\n";
+        let csv = "Fecha,Lote ID,Receta,Volumen (L),Masa Total (g),Costo Total (ARS),ABV Medido,pH Medido,Corrector,Notas,Comentarios\n";
         history.forEach(h => {
-            csv += `"${h.date}","${h.lotId}","${h.recipeTitle.replace(/"/g, '""')}","${h.volume}","${h.totMass}","${h.totCost}","${h.abv}","${h.ph}","${h.corrector}","${h.notes}"\n`;
+            const safeComments = (h.comments || '').replace(/"/g, '""');
+            csv += `"${h.date}","${h.lotId}","${h.recipeTitle.replace(/"/g, '""')}","${h.volume}","${h.totMass}","${h.totCost}","${h.abv}","${h.ph}","${h.corrector}","${h.notes}","${safeComments}"\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1074,6 +1469,10 @@
         const activeBtn = document.getElementById(`btn-${tabId}`) || document.querySelector('.nav-tab');
         if (activeBtn) activeBtn.classList.add('active');
 
+        if (tabId !== 'master' && tabId !== 'history') {
+            recalculateRecipe(tabId);
+        }
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1081,8 +1480,10 @@
         const activeTab = document.querySelector('.tab-content.active');
         if (activeTab && activeTab.id.startsWith('tab-R')) {
             const code = activeTab.id.replace('tab-', '');
-            document.getElementById(`vol-${code}`).value = 5.0;
+            const masterVol = getMasterBatchSize();
+            document.getElementById(`vol-${code}`).value = masterVol.toFixed(1);
             recalculateRecipe(code);
+            showToast(`🔄 Ficha restaurada al lote maestro (${masterVol.toFixed(1)} L).`);
         }
     }
 
