@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Don Aurelio — App de Gestión y Producción de Vermuts</title>
+    <title>Don Aurelio — Gestión de Producción y Control Organoléptico</title>
     <style>
         :root {
             --burgundy: #4a1525;
@@ -20,6 +20,7 @@
             --success-color: #2e7d32;
             --danger-color: #c62828;
             --info-color: #0284c7;
+            --warning-color: #d97706;
         }
 
         * {
@@ -106,6 +107,16 @@
             color: #ffffff;
             border-color: var(--wine-light);
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+
+        .nav-tab.tab-qc {
+            background-color: #1e3a5f;
+            color: #bae6fd;
+            border-color: #2b5c8f;
+        }
+        .nav-tab.tab-qc.active {
+            background-color: var(--info-color);
+            color: #ffffff;
         }
 
         .nav-tab.tab-history {
@@ -214,7 +225,7 @@
             text-transform: uppercase;
         }
 
-        .control-group input, .control-group textarea {
+        .control-group input, .control-group textarea, .control-group select {
             padding: 8px 12px;
             border: 1.5px solid var(--border-color);
             border-radius: 4px;
@@ -222,12 +233,6 @@
             font-weight: 600;
             background-color: var(--input-highlight);
             color: var(--burgundy);
-        }
-
-        .control-group input:focus, .control-group textarea:focus {
-            outline: none;
-            border-color: var(--wine);
-            box-shadow: 0 0 0 3px rgba(139, 38, 62, 0.15);
         }
 
         .table-responsive {
@@ -486,6 +491,95 @@
             margin-bottom: 4px;
         }
 
+        /* ESTILOS DEL MÓDULO ORGANOLÉPTICO */
+        .sensory-slider-group {
+            background: #fffdfa;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-header span {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--burgundy);
+        }
+
+        .slider-score {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--wine);
+            background: var(--input-highlight);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            min-width: 42px;
+            text-align: center;
+        }
+
+        .sensory-slider {
+            width: 100%;
+            height: 8px;
+            accent-color: var(--wine);
+            cursor: pointer;
+        }
+
+        .slider-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .score-board {
+            background: linear-gradient(135deg, var(--burgundy-dark) 0%, var(--burgundy) 100%);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .total-score-badge {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #f3e5ab;
+            line-height: 1;
+        }
+
+        .verdict-tag {
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .verdict-aprobado { background-color: var(--success-color); color: #fff; }
+        .verdict-condicional { background-color: var(--warning-color); color: #fff; }
+        .verdict-rechazado { background-color: var(--danger-color); color: #fff; }
+
+        .dosing-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
         .toast-notification {
             position: fixed;
             bottom: 20px;
@@ -532,11 +626,11 @@
     <div class="header-content">
         <div class="brand-title">
             <h1>Don Aurelio — Gestión de Vermutería</h1>
-            <p>Calculadora y Bitácora Operativa con Registro de Lotes (g) | CAA Art. 1111/1113</p>
+            <p>Producción, Bitácora Operativa y Control Organoléptico de Calidad</p>
         </div>
         <div>
             <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir Ficha / PDF</button>
-            <button class="btn btn-reset" onclick="resetCurrentTab()">🔄 Restaurar a Lote Maestro</button>
+            <button class="btn btn-reset" onclick="resetCurrentTab()">🔄 Restaurar Lote</button>
         </div>
     </div>
 </header>
@@ -544,6 +638,7 @@
 <div class="nav-container">
     <div class="nav-tabs" id="navTabs">
         <button class="nav-tab active" onclick="switchTab('master')">📊 Tablero Maestro</button>
+        <button class="nav-tab tab-qc" id="btn-sensory" onclick="switchTab('sensory')">🔬 Control Organoléptico (<span id="sensoryCount">0</span>)</button>
         <button class="nav-tab tab-history" id="btn-history" onclick="switchTab('history')">📋 Historial de Lotes (<span id="historyCount">0</span>)</button>
     </div>
 </div>
@@ -557,7 +652,6 @@
                 <span>11 Recetas Estandarizadas</span>
             </div>
 
-            <!-- CONTROL MAESTRO DE LOTE GENERAL -->
             <div class="master-controls-bar">
                 <div>
                     <strong style="color: var(--burgundy); font-size: 0.95rem; text-transform: uppercase;">⚙️ Configuración Maestra de Lote por Defecto</strong>
@@ -604,7 +698,181 @@
         </div>
     </div>
 
-    <!-- TABLA DE HISTORIAL -->
+    <!-- MÓDULO: CONTROL ORGANOLÉPTICO Y CATA TÉCNICA -->
+    <div id="tab-sensory" class="tab-content">
+        <div class="card">
+            <div id="sensory-edit-banner" class="edit-banner">
+                <span>✏️ Modificando Evaluación Organoléptica: <strong id="sensory-edit-lot-display"></strong>. Al guardar se sobrescribirá el registro.</span>
+                <button class="btn btn-reset" style="padding: 4px 10px;" onclick="cancelSensoryEdit()">Cancelar Edición</button>
+            </div>
+
+            <div class="section-header" style="background-color: #1e3a5f;">
+                <span>Planilla de Control Organoléptico y Evaluación Sensorial (Copa ISO)</span>
+                <span>Escala 100 Puntos</span>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>Receta a Evaluar:</label>
+                    <select id="sensory-recipe-select" onchange="autoFillSensoryRecipe()">
+                        <!-- Dinámico con las 11 recetas -->
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Lote ID Vinculado:</label>
+                    <input type="text" id="sensory-lot-id" placeholder="Ej: LOT-R08_Torino-001">
+                </div>
+                <div class="control-group">
+                    <label>Fecha de Cata / Testeo:</label>
+                    <input type="date" id="sensory-date" value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div class="control-group">
+                    <label>Volumen del Lote a Corregir (L):</label>
+                    <input type="number" id="sensory-batch-vol" step="0.1" min="0.1" value="5.0" oninput="calculateCorrections()">
+                </div>
+            </div>
+
+            <!-- TABLERO DE PUNTAJE Y DICTAMEN -->
+            <div class="score-board">
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85;">Puntuación Total Obtenida</span>
+                    <div class="total-score-badge"><span id="sensory-total-score">85</span> / 100</div>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85; display: block; margin-bottom: 4px;">Dictamen Técnico del Lote</span>
+                    <span id="sensory-verdict" class="verdict-tag verdict-aprobado">Aprobado para Embotellar</span>
+                </div>
+            </div>
+
+            <!-- EVALUACIÓN POR SLIDERS NUMÉRICOS -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                <div>
+                    <h4 style="color: var(--burgundy); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px;">Fases Sensoriales Primarias</h4>
+                    
+                    <div class="sensory-slider-group">
+                        <div class="slider-header">
+                            <span>1. Fase Visual y Brillo (Máx 15 pts)</span>
+                            <span class="slider-score" id="val-s-visual">13</span>
+                        </div>
+                        <input type="range" class="sensory-slider" id="s-visual" min="0" max="15" value="13" oninput="updateSensoryScores()">
+                        <div class="slider-desc">Limpidez, brillo, viscosidad/lágrima y ausencia total de turbidez coloidal.</div>
+                    </div>
+
+                    <div class="sensory-slider-group">
+                        <div class="slider-header">
+                            <span>2. Fase Olfativa y Franqueza (Máx 25 pts)</span>
+                            <span class="slider-score" id="val-s-olfato">21</span>
+                        </div>
+                        <input type="range" class="sensory-slider" id="s-olfato" min="0" max="25" value="21" oninput="updateSensoryScores()">
+                        <div class="slider-desc">Intensidad botánica, franqueza vínica, alcohol integrado y copa seca a los 15 min.</div>
+                    </div>
+
+                    <div class="sensory-slider-group">
+                        <div class="slider-header">
+                            <span>3. Fase Gustativa y Equilibrio (Máx 35 pts)</span>
+                            <span class="slider-score" id="val-s-gusto">30</span>
+                        </div>
+                        <input type="range" class="sensory-slider" id="s-gusto" min="0" max="35" value="30" oninput="updateSensoryScores()">
+                        <div class="slider-desc">Ataque dulce, tensión ácida málica/cítrica, profundidad del amargor y estructura.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--burgundy); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px;">Persistencia y Ensayo Forzado</h4>
+                    
+                    <div class="sensory-slider-group">
+                        <div class="slider-header">
+                            <span>4. Textura en Boca y Caudalía (Máx 15 pts)</span>
+                            <span class="slider-score" id="val-s-textura">13</span>
+                        </div>
+                        <input type="range" class="sensory-slider" id="s-textura" min="0" max="15" value="13" oninput="updateSensoryScores()">
+                        <div class="slider-desc">Sedosidad, untuosidad, retrogusto aromático persistente y sin asperezas taninas.</div>
+                    </div>
+
+                    <div class="sensory-slider-group">
+                        <div class="slider-header">
+                            <span>5. Dilución 50/50 y Efecto Louche (Máx 10 pts)</span>
+                            <span class="slider-score" id="val-s-dilucion">8</span>
+                        </div>
+                        <input type="range" class="sensory-slider" id="s-dilucion" min="0" max="10" value="8" oninput="updateSensoryScores()">
+                        <div class="slider-desc">Comportamiento con hielo/soda: resistencia de aromas y control de enturbiamiento cítrico.</div>
+                    </div>
+
+                    <div class="sensory-slider-group" style="background: #fdfbf7;">
+                        <span style="font-weight: 700; font-size: 0.8rem; color: var(--burgundy); display: block; margin-bottom: 6px;">DESCRIPTORES Y DESVÍOS NOTADOS</span>
+                        <input type="text" id="sensory-descriptors" placeholder="Ej: Amargor punzante, acidez baja, excelente cáscara de naranja...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO DE MICRODOSIFICACIÓN MULTITINTURA -->
+            <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem;">
+                <span>Microdosificación Multitintura en Copa ISO (100 ml) $\rightarrow$ Corrección en Lote</span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                Cargar las gotas aplicadas en 100 ml para corregir desvíos. El sistema calcula los mililitros exactos para el volumen total del lote (20 gotas = 1.0 ml).
+            </p>
+
+            <div style="background: #fdfbf7; border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; margin-bottom: 20px;">
+                <div style="font-weight: 700; font-size: 0.75rem; color: var(--burgundy); display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 6px; text-transform: uppercase;">
+                    <span>Corrector / Tintura</span>
+                    <span>Gotas / 100 ml</span>
+                    <span class="text-right">Total para Lote (ml)</span>
+                </div>
+                
+                <div id="dosingContainer">
+                    <!-- Filas de dosificación multitintura -->
+                </div>
+            </div>
+
+            <!-- OBSERVACIONES GENERALES -->
+            <div class="control-group" style="margin-bottom: 20px;">
+                <label>Notas de Laboratorio y Decisión de Fraccionamiento:</label>
+                <textarea id="sensory-notes" rows="3" placeholder="Anotar detalles de evolución, tiempo de reposo sugerido en botella o cava..."></textarea>
+            </div>
+
+            <div class="batch-actions-footer">
+                <button class="btn btn-save-batch" id="btn-save-sensory" onclick="saveSensoryBatch()">
+                    💾 Guardar Evaluación en Historial
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLA DE HISTORIAL DE CATAS -->
+        <div class="card">
+            <div class="section-header" style="background-color: #2a3b2c;">
+                <span>Historial de Evaluaciones y Catas Realizadas</span>
+                <div>
+                    <button class="btn btn-print" style="padding: 4px 10px; font-size: 0.75rem;" onclick="exportSensoryCSV()">📥 Exportar Catas (CSV)</button>
+                    <button class="btn btn-danger" onclick="clearSensoryHistory()">🗑️ Borrar Historial Catas</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="sensoryHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Lote ID</th>
+                            <th>Receta</th>
+                            <th class="text-center">Puntaje</th>
+                            <th class="text-center">Dictamen</th>
+                            <th>Descriptores Notados</th>
+                            <th>Correcciones Dosificadas</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensoryHistoryTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptySensoryMsg" style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 0.88rem;">
+                No hay evaluaciones organolépticas archivadas todavía.
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DE HISTORIAL DE LOTES DE PRODUCCIÓN -->
     <div id="tab-history" class="tab-content">
         <div class="card">
             <div class="section-header" style="background-color: #2a3b2c;">
@@ -644,13 +912,12 @@
 </main>
 
 <div class="toast-notification" id="toastNotification">
-    ✅ ¡Lote registrado con éxito en el historial!
+    ✅ ¡Operación realizada con éxito!
 </div>
 
 <script>
     const masterData = [[1, "Clásica Española (Evolución Madrileña)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 17.0, 0.0, 65.0, "200.0 g Caramelo Oscuro Estandarizado", 140.0, 0.161], [2, "Rosé Floral (Autor Complejo)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%) + Cold Brew Hibiscus", 762.5, 0.762, 15.0, 0.0, 65.0, "157.5 g Almíbar 2:1 Estandarizado", 105.0, 0.16], [3, "Serrano Aperitivo (Monte de Altura)", "Vermut (Art. 1113)", "Blanco Neutro (12.5%)", 755.0, 0.755, 16.0, 0.0, 65.0, "180.0 g Almíbar 2:1 (+5g Miel)", 120.0, 0.162], [4, "Rivera Italiano (Piemontés Fino)", "Vermut (Art. 1113)", "Torrontés / Sav. B. (13.0%)", 750.0, 0.75, 12.0, 0.0, 65.0, "187.5 g Almíbar 2:1 Estandarizado", 125.0, 0.16], [5, "Calamuchita (Dry Criollo de Autor)", "Vermut (Art. 1113)", "Blanco Alta Acidez (12.5%)", 750.0, 0.75, 12.5, 0.0, 65.0, "202.5 g Almíbar 2:1 Estandarizado", 135.0, 0.16], [6, "Don Aurelio Vasconia", "Vermut (Art. 1113)", "Ugni/Chenin (75%) + Pinot/Bonarda (25%)", 780.0, 0.78, 0.0, 10.0, 65.0, "145.0 g Almíbar Sidra / Miel", 96.6, 0.155], [7, "Pichincha", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 13.5, 0.0, 65.0, "232.5 g Almíbar 2:1 Estandarizado", 155.0, 0.16], [8, "Italiano Torino / Cinzano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 750.0, 0.75, 12.6, 0.0, 65.0, "221.4 g Caramelo Oscuro Estandarizado", 155.0, 0.16], [9, "Aperitivo Tipo Cynar", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 126.0, 489.7, 170.0, "214.3 g Caramelo Oscuro Estandarizado", 150.0, 0.17], [10, "Amargo Obrero Casero", "Amaro (Art. 1111)", "Sin Vino (Matriz Hidroalc.)", 0.0, 0.0, 130.0, 481.4, 190.0, "198.6 g Caramelo Oscuro Estandarizado", 139.0, 0.184], [11, "Vermut Belgrano", "Vermut (Art. 1113)", "Blanco (75%) / Tinto (25%)", 807.0, 0.807, 18.0, 0.0, 58.0, "107.0 g Jarabe Vino Cocido", 107.0, 0.16]];
     
-    // TODAS LAS RECETAS ACTUALIZADAS CON MASA CONSOLIDADA DE SOLUCIÓN HIDROALCOHÓLICA 50% VOL.
     const recipesData = [
       {
         "num": 1,
@@ -658,13 +925,9 @@
         "title": "01 - Clásica Española (Evolución Madrileña con Roble & Angélica)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Vino Blanco Neutro (12.5% vol.)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 42.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 42.9,
         "fa_botanicos": [["Ajenjo seco (Artemisia absinthium)", 3.5], ["Chips de Roble Francés (Tostado Medio)", 1.5], ["Raíz de Angélica", 0.4]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 28.7,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 28.7,
         "fb_botanicos": [["Corteza de Naranja Dulce Seca", 3.0], ["Corteza de Limón Seca", 2.0], ["Canela en Rama", 1.5], ["Clavo de Olor", 0.4], ["Semilla de Coriandro (machacada)", 0.8]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Blanco Neutro (12.5%)", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 17.0, 45.0], ["Caramelo Oscuro Estandarizado", 200.0, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
@@ -676,13 +939,9 @@
         "title": "02 - Rosé Floral (Autor Complejo con Genciana, Cuasia & Rosa)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Vino Blanco Neutro (12.5% vol.) + Cold Brew Hibiscus",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 42.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 42.9,
         "fa_botanicos": [["Ajenjo seco", 2.0], ["Raíz de Angélica", 0.8], ["Raíz de Genciana", 0.5], ["Madera de Cuasia", 0.3]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 28.7,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 28.7,
         "fb_botanicos": [["Flores de Saúco", 1.5], ["Pétalos de Rosa o Jazmín seco", 0.5], ["Corteza de Limón", 1.0], ["Corteza de Pomelo Rosado", 1.5], ["Pimienta Rosa / Aguaribay", 0.2], ["Vainilla en Vaina", 0.3]],
         "tintura_target": 65.0,
         "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 2.5, "g por cada 762.5g de vino blanco"],
@@ -694,13 +953,9 @@
         "title": "03 - Serrano Aperitivo (Monte de Altura con Genciana, Tomillo & Enebro)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Vino Blanco Neutro (12.5% vol.)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 42.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 42.9,
         "fa_botanicos": [["Ajenjo seco", 2.5], ["Carqueja Seca", 1.2], ["Raíz de Genciana", 0.6], ["Salvia Seca", 0.8]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 28.7,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 28.7,
         "fb_botanicos": [["Peperina Seca", 2.0], ["Tomillo o Salvia Serrana", 0.6], ["Bayas de Enebro (machacadas)", 0.5], ["Corteza de Mandarina Criolla", 2.0], ["Manzanilla Común", 1.5], ["Coriandro (semilla machacada)", 0.5]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Blanco Neutro", 755.0, 15.0], ["Alcohol Etílico 96° Directo", 16.0, 45.0], ["Almíbar 2:1 Estandarizado", 180.0, 8.0], ["Miel de Monte Orgánica (en almíbar)", 5.0, 25.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
@@ -712,13 +967,9 @@
         "title": "04 - Rivera Italiano (Piemontés Fino con Lirio, Roble & Cardamomo)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Torrontés / Sauvignon Blanc (13.0% vol.)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 42.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 42.9,
         "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Genciana", 0.8], ["Raíz de Lirio (Iris germanica)", 0.5], ["Chips de Roble Francés (Tostado Ligero)", 1.0]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 28.7,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 28.7,
         "fb_botanicos": [["Naranja Amarga", 2.0], ["Limón Seco", 1.6], ["Corteza de Pomelo Blanco seco", 0.4], ["Manzanilla Romana", 1.5], ["Menta Piperita", 0.8], ["Semillas de Cardamomo (abiertas)", 0.3], ["Anís Estrellado", 0.2]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Torrontés / Sauvignon Blanc (13%)", 750.0, 16.0], ["Alcohol Etílico 96° Directo", 12.0, 45.0], ["Almíbar 2:1 Estandarizado", 187.5, 8.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
@@ -730,13 +981,9 @@
         "title": "05 - Calamuchita (Dry Criollo de Autor con Roble, Angélica & Laurel)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Vino Blanco Alta Acidez (12.5% vol.)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 42.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 42.9,
         "fa_botanicos": [["Ajenjo seco", 3.0], ["Carqueja Seca", 0.5], ["Aguaribay (Pimienta Rosa)", 1.2], ["Raíz de Angélica", 0.6], ["Chips de Roble Francés (Tostado Ligero)", 1.5]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 28.7,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 28.7,
         "fb_botanicos": [["Peperina Seca", 2.0], ["Poleo Seco", 1.0], ["Corteza de Naranja Dulce", 2.0], ["Cardamomo", 0.5], ["Romero Seco", 0.4], ["Laurel Seco", 0.4], ["Semillas de Hinojo", 0.3]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Blanco de Alta Acidez", 750.0, 15.0], ["Alcohol Etílico 96° Directo", 12.5, 45.0], ["Almíbar 2:1 Estandarizado", 202.5, 8.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
@@ -748,13 +995,9 @@
         "title": "06 - Don Aurelio Vasconia (Corte Atlántico & Roble)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Ugni/Chenin (75%) + Pinot Noir/Bonarda (25%)",
-        "fa_temp": "60°C",
-        "fa_time": "2.5 Horas (Fase 1)",
-        "fa_hidro": 53.1,
+        "fa_temp": "60°C", "fa_time": "2.5 Horas (Fase 1)", "fa_hidro": 53.1,
         "fa_botanicos": [["Ajenjo seco", 2.5], ["Raíz de Genciana", 1.5], ["Chips de Roble Francés (Tostado Ligero)", 1.5], ["Canela de Ceylán", 0.3], ["Bayas de Enebro (machacadas)", 1.0], ["Coriandro", 0.5]],
-        "fb_temp": "60°C",
-        "fb_time": "Últimos 45 Min (Fase 2)",
-        "fb_hidro": 35.4,
+        "fb_temp": "60°C", "fb_time": "Últimos 45 Min (Fase 2)", "fb_hidro": 35.4,
         "fb_botanicos": [["Laurel Seco", 0.6], ["Romero Seco", 0.4], ["Salvia o Tomillo Seco", 0.3], ["Menta Piperita", 0.5], ["Cáscara de Naranja Amarga", 2.0], ["Cáscara de Limón", 1.5]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Blanco Neutro (Ugni/Chenin)", 585.0, 15.0], ["Vino Tinto Joven (Pinot Noir/Bonarda)", 195.0, 18.0], ["Tintura Vasca Filtrada", 65.0, 0.0], ["Almíbar de Sidra o Miel de Monte", 145.0, 12.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Agua Filtrada (Ajuste Masa)", 10.0, 1.0]],
@@ -766,13 +1009,9 @@
         "title": "07 - Rubino Gran Botánico (Don Aurelio Barrancas)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%) + Cold Brew Hibiscus",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 45.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 45.9,
         "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Carqueja Seca", 0.8], ["Madera de Cuasia", 0.3]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 30.6,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 30.6,
         "fb_botanicos": [["Naranja Dulce", 2.5], ["Limón Seco", 1.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Romero Seco", 0.4], ["Salvia Seca", 0.3], ["Raíz de Lirio", 0.5], ["Coriandro", 0.3], ["Cardamomo", 0.1], ["Pimienta de Jamaica", 0.5], ["Hinojo (semilla)", 0.1], ["Anís Estrellado", 0.2]],
         "tintura_target": 65.0,
         "cold_brew": ["Cold Brew Hibiscus (12-18 hs en heladera)", 4.0, "g por cada 750.0g de vino base corte rubino"],
@@ -784,13 +1023,9 @@
         "title": "08 - Italiano Torino (Don Aurelio Gran Torino Riserva)",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Blanco Neutro (75%) + Tinto Malbec (25%)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 45.9,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 45.9,
         "fa_botanicos": [["Ajenjo seco", 3.2], ["Raíz de Genciana", 1.2], ["Chips Roble Francés Tostado Medio", 4.0]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 30.6,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 30.6,
         "fb_botanicos": [["Corteza de Naranja Dulce", 2.5], ["Canela en Rama", 0.8], ["Clavo de Olor", 0.3], ["Vainilla en Vaina", 0.5], ["Raíz de Ruibarbo", 1.0]],
         "tintura_target": 65.0,
         "ensamblaje": [["Vino Blanco Neutro", 562.5, 15.0], ["Vino Tinto Malbec Joven", 187.5, 18.0], ["Alcohol Etílico 96° Directo", 12.6, 45.0], ["Caramelo Oscuro Estandarizado", 221.4, 8.0], ["Ácido Málico (Añadido Directo)", 1.2, 50.0], ["Tintura Madre Filtrada (A+B)", 65.0, 0.0]],
@@ -802,13 +1037,9 @@
         "title": "09 - Aperitivo Tipo Cynar (Don Aurelio Cynara Bitter)",
         "type": "Amaro / Aperitivo (Art. 1111)",
         "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 114.0,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 114.0,
         "fa_botanicos": [["Hojas secas de Alcachofa/Alcaucil", 20.0], ["Raíz de Genciana", 2.5], ["Raíz de Ruibarbo", 2.5], ["Cáscara Sagrada", 1.5], ["Madera de Cuasia", 1.0], ["Raíz de Angélica", 1.0]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 76.0,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 76.0,
         "fb_botanicos": [["Corteza de Naranja Amarga", 2.0], ["Canela de Ceylán", 1.0], ["Bayas de Enebro", 1.0], ["Menta Piperita / Peperina", 1.5], ["Coriandro", 0.5], ["Clavo de Olor", 0.2]],
         "tintura_target": 170.0,
         "ensamblaje": [["Agua Filtrada Cristalina", 489.7, 1.0], ["Alcohol Etílico 96° Directo", 126.0, 45.0], ["Caramelo Oscuro Estandarizado", 214.3, 8.0], ["Tintura Madre Completa (A+B)", 170.0, 0.0]],
@@ -820,13 +1051,9 @@
         "title": "10 - Amargo Obrero Casero (Don Aurelio Amaro Rústico)",
         "type": "Amaro / Aperitivo (Art. 1111)",
         "base_desc": "Matriz Hidroalcohólica Pura (Agua + Alcohol)",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 127.4,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 127.4,
         "fa_botanicos": [["Ajenjo seco", 4.5], ["Carqueja Seca", 3.5], ["Raíz de Genciana", 0.8], ["Té Negro", 0.5], ["Regaliz", 0.5], ["Corteza de Quina", 0.3], ["Coriandro", 0.5]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 85.0,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 85.0,
         "fb_botanicos": [["Corteza de Naranja Dulce", 3.0], ["Muña Muña", 1.5], ["Poleo", 1.0], ["Peperina / Menta Piperita", 1.0], ["Manzanilla Común", 1.5], ["Pimienta de Jamaica", 0.4], ["Anís Estrellado", 0.2]],
         "tintura_target": 190.0,
         "ensamblaje": [["Agua Filtrada Cristalina", 481.4, 1.0], ["Alcohol Etílico 96° Directo", 130.0, 45.0], ["Caramelo Oscuro Estandarizado", 198.6, 8.0], ["Tintura Madre Completa (A+B)", 190.0, 0.0]],
@@ -838,24 +1065,33 @@
         "title": "11 - Arrope Santafesino / Pago de los Arroyos",
         "type": "Vermut (CAA Art. 1113)",
         "base_desc": "Blanco Neutro (75%) + Tinto Bonarda (25%) + Jarabe Vino Cocido",
-        "fa_temp": "55°C",
-        "fa_time": "2 Horas (60% Solución)",
-        "fa_hidro": 41.0,
+        "fa_temp": "55°C", "fa_time": "2 Horas (60% Solución)", "fa_hidro": 41.0,
         "fa_botanicos": [["Ajenjo seco", 3.0], ["Raíz de Angélica", 1.5], ["Carqueja Seca", 0.8]],
-        "fb_temp": "55°C",
-        "fb_time": "45 Minutos (40% Solución)",
-        "fb_hidro": 27.3,
+        "fb_temp": "55°C", "fb_time": "45 Minutos (40% Solución)", "fb_hidro": 27.3,
         "fb_botanicos": [["Flores de Saúco", 2.5], ["Manzanilla Romana", 1.5], ["Cardamomo", 0.5], ["Naranja Amarga", 1.5]],
         "tintura_target": 58.0,
         "ensamblaje": [["Vino Blanco Neutro", 605.3, 15.0], ["Vino Tinto Bonarda", 201.7, 18.0], ["Alcohol Etílico 96° Directo", 18.0, 45.0], ["Jarabe de Vino Cocido (107g vino+107g azú->107g)", 107.0, 20.0], ["Ácido Málico (Añadido Directo)", 1.0, 50.0], ["Tintura Madre Filtrada (A+B)", 58.0, 0.0]],
         "cold_brew": null
       }
     ];
+
+    // CATÁLOGO DE CORRECTORES MULTITINTURA
+    const DOSING_AGENTS = [
+        { id: "tint_1", name: "Tintura 1 (Ajenjo - Estructura & Amargor Base)" },
+        { id: "tint_2", name: "Tintura 2 (Genciana - Amargor Seco Tónico)" },
+        { id: "tint_3", name: "Tintura 3 (Peperina / Menta - Frescura)" },
+        { id: "tint_4", name: "Tintura 4 (Cáscara Cítrica Naranja/Pomelo)" },
+        { id: "tint_5", name: "Tintura 5 (Roble / Vainilla - Redondeo Cava)" },
+        { id: "acid_malic", name: "Solución Ácido Málico 10% (Tensión Acidez)" },
+        { id: "syrup_2_1", name: "Almíbar 2:1 / Caramelo (Equilibrio Dulce)" }
+    ];
     
     const STORAGE_KEY = 'DON_AURELIO_BATCH_HISTORY_V1';
     const MASTER_BATCH_KEY = 'DON_AURELIO_MASTER_BATCH_SIZE';
+    const SENSORY_STORAGE_KEY = 'DON_AURELIO_SENSORY_HISTORY_V1';
 
     let currentEditingBatchId = null;
+    let currentEditingSensoryId = null;
 
     function getMasterBatchSize() {
         const val = localStorage.getItem(MASTER_BATCH_KEY);
@@ -877,6 +1113,19 @@
     function saveHistory(history) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
         updateHistoryTable();
+    }
+
+    function getSensoryHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(SENSORY_STORAGE_KEY)) || [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function saveSensoryHistory(history) {
+        localStorage.setItem(SENSORY_STORAGE_KEY, JSON.stringify(history));
+        updateSensoryHistoryTable();
     }
 
     function initApp() {
@@ -927,7 +1176,7 @@
             btn.id = `btn-${rec.code}`;
             btn.innerText = `R${rec.num < 10 ? '0' + rec.num : rec.num} ${rec.title.split('(')[0].replace(/^\d+\s*-\s*/, '').trim()}`;
             btn.onclick = () => switchTab(rec.code);
-            navTabs.insertBefore(btn, document.getElementById('btn-history'));
+            navTabs.insertBefore(btn, document.getElementById('btn-sensory'));
 
             const sheet = document.createElement('div');
             sheet.id = `tab-${rec.code}`;
@@ -936,8 +1185,23 @@
             mainContainer.appendChild(sheet);
         });
 
+        // Cargar selector del módulo organoléptico
+        const sensorySelect = document.getElementById('sensory-recipe-select');
+        sensorySelect.innerHTML = '';
+        recipesData.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.code;
+            opt.innerText = r.title;
+            sensorySelect.appendChild(opt);
+        });
+
+        // Construir módulo multitintura
+        buildDosingTable();
+
         recipesData.forEach(rec => recalculateRecipe(rec.code));
         updateHistoryTable();
+        updateSensoryHistoryTable();
+        updateSensoryScores();
     }
 
     function applyMasterBatchToAll() {
@@ -992,7 +1256,7 @@
                     </div>
                 </div>
 
-                <!-- BLOQUE 1: SOUS VIDE (CONSOLIDADOS EN SOLUCIÓN HIDROALCOHÓLICA AL 50%) -->
+                <!-- BLOQUE 1: SOUS VIDE -->
                 <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem;">
                     <span>Bloque 1: Extracción Sous Vide (Solución Hidroalcohólica 50% vol. con +10% margen)</span>
                 </div>
@@ -1152,7 +1416,7 @@
 
                 <!-- BLOQUE 4: QC & CATA -->
                 <div class="section-header" style="background-color: var(--burgundy); font-size: 0.85rem; margin-top: 20px;">
-                    <span>Bloque 4: Cata de Laboratorio, Corrección en Copa ISO y Bitácora del Lote</span>
+                    <span>Bloque 4: Registro Fisicoquímico en Laboratorio</span>
                 </div>
                 <div class="qc-grid">
                     <div class="qc-box">
@@ -1204,7 +1468,6 @@
                     ? parseFloat(volEl.value) 
                     : 1.0;
 
-        // CÁLCULO DE SOLUCIÓN HIDROALCOHÓLICA CONSOLIDADA (FRASCO A Y FRASCO B)
         const faHidroEl = document.getElementById(`fa_hidro-${code}`);
         if (faHidroEl) faHidroEl.innerText = (rec.fa_hidro * vol).toFixed(1);
 
@@ -1450,6 +1713,319 @@
         document.body.removeChild(link);
     }
 
+    /* ==========================================================================
+       LÓGICA DEL MÓDULO ORGANOLÉPTICO (SLIDERS, MULTITINTURA Y REGABRADO)
+       ========================================================================== */
+
+    function buildDosingTable() {
+        const container = document.getElementById('dosingContainer');
+        container.innerHTML = '';
+        DOSING_AGENTS.forEach(agent => {
+            const row = document.createElement('div');
+            row.className = 'dosing-row';
+            row.innerHTML = `
+                <span style="font-size: 0.82rem; font-weight: 600; color: var(--burgundy);">${agent.name}</span>
+                <input type="number" min="0" step="1" value="0" id="dose_drops_${agent.id}" class="cost-input" style="width: 75px;" oninput="calculateCorrections()">
+                <span class="text-right font-bold" id="dose_ml_${agent.id}" style="font-size: 0.85rem; color: var(--wine);">0.00 ml</span>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    function autoFillSensoryRecipe() {
+        const code = document.getElementById('sensory-recipe-select').value;
+        const lotInput = document.getElementById('sensory-lot-id');
+        if (!lotInput.value || lotInput.value.startsWith('LOT-')) {
+            lotInput.value = `LOT-${code}-001`;
+        }
+    }
+
+    function updateSensoryScores() {
+        const vVisual = parseInt(document.getElementById('s-visual').value) || 0;
+        const vOlfato = parseInt(document.getElementById('s-olfato').value) || 0;
+        const vGusto = parseInt(document.getElementById('s-gusto').value) || 0;
+        const vTextura = parseInt(document.getElementById('s-textura').value) || 0;
+        const vDilucion = parseInt(document.getElementById('s-dilucion').value) || 0;
+
+        document.getElementById('val-s-visual').innerText = vVisual;
+        document.getElementById('val-s-olfato').innerText = vOlfato;
+        document.getElementById('val-s-gusto').innerText = vGusto;
+        document.getElementById('val-s-textura').innerText = vTextura;
+        document.getElementById('val-s-dilucion').innerText = vDilucion;
+
+        const total = vVisual + vOlfato + vGusto + vTextura + vDilucion;
+        document.getElementById('sensory-total-score').innerText = total;
+
+        const verdictEl = document.getElementById('sensory-verdict');
+        if (total >= 85) {
+            verdictEl.innerText = "Aprobado para Embotellar";
+            verdictEl.className = "verdict-tag verdict-aprobado";
+        } else if (total >= 70) {
+            verdictEl.innerText = "Aprobado Condicional con Corrección";
+            verdictEl.className = "verdict-tag verdict-condicional";
+        } else {
+            verdictEl.innerText = "Rechazado / Requiere Corte Estructural";
+            verdictEl.className = "verdict-tag verdict-rechazado";
+        }
+    }
+
+    // CÁLCULO MULTITINTURA: Gotas en 100 ml -> ml en Lote Real (20 gotas = 1.0 ml)
+    function calculateCorrections() {
+        const volLote = parseFloat(document.getElementById('sensory-batch-vol').value) || 1.0;
+        DOSING_AGENTS.forEach(agent => {
+            const drops = parseFloat(document.getElementById(`dose_drops_${agent.id}`).value) || 0;
+            // gotas/100ml * 10 = gotas/Litro. Dividido 20 gotas/ml = ml/Litro. Multiplicado por volLote = ml totales
+            const totalMl = ((drops * 10) / 20.0) * volLote;
+            const mlEl = document.getElementById(`dose_ml_${agent.id}`);
+            if (mlEl) mlEl.innerText = `${totalMl.toFixed(2)} ml`;
+        });
+    }
+
+    function saveSensoryBatch() {
+        const recipeSelect = document.getElementById('sensory-recipe-select');
+        const recipeCode = recipeSelect.value;
+        const recipeTitle = recipeSelect.options[recipeSelect.selectedIndex].text;
+        const lotId = document.getElementById('sensory-lot-id').value || `LOT-${recipeCode}`;
+        const date = document.getElementById('sensory-date').value || new Date().toISOString().split('T')[0];
+        const batchVol = parseFloat(document.getElementById('sensory-batch-vol').value) || 1.0;
+        const totalScore = parseInt(document.getElementById('sensory-total-score').innerText) || 0;
+        const verdict = document.getElementById('sensory-verdict').innerText;
+        const descriptors = document.getElementById('sensory-descriptors').value || '';
+        const notes = document.getElementById('sensory-notes').value || '';
+
+        const scores = {
+            visual: parseInt(document.getElementById('s-visual').value),
+            olfato: parseInt(document.getElementById('s-olfato').value),
+            gusto: parseInt(document.getElementById('s-gusto').value),
+            textura: parseInt(document.getElementById('s-textura').value),
+            dilucion: parseInt(document.getElementById('s-dilucion').value)
+        };
+
+        const corrections = [];
+        DOSING_AGENTS.forEach(agent => {
+            const drops = parseFloat(document.getElementById(`dose_drops_${agent.id}`).value) || 0;
+            if (drops > 0) {
+                const totalMl = ((drops * 10) / 20.0) * batchVol;
+                corrections.push({
+                    agentId: agent.id,
+                    agentName: agent.name,
+                    drops: drops,
+                    totalMl: totalMl.toFixed(2)
+                });
+            }
+        });
+
+        let history = getSensoryHistory();
+
+        if (currentEditingSensoryId) {
+            // SOBREESCRIBIR TESTEO HISTÓRICO
+            const idx = history.findIndex(s => s.id === currentEditingSensoryId);
+            if (idx !== -1) {
+                history[idx].date = date;
+                history[idx].lotId = lotId;
+                history[idx].recipeCode = recipeCode;
+                history[idx].recipeTitle = recipeTitle;
+                history[idx].batchVol = batchVol;
+                history[idx].totalScore = totalScore;
+                history[idx].verdict = verdict;
+                history[idx].scores = scores;
+                history[idx].descriptors = descriptors;
+                history[idx].corrections = corrections;
+                history[idx].notes = notes;
+                history[idx].modifiedAt = new Date().toISOString();
+
+                saveSensoryHistory(history);
+                showToast(`✅ Evaluación de ${lotId} actualizada y regrabada.`);
+            }
+            cancelSensoryEdit();
+        } else {
+            // NUEVO REGISTRO
+            const entry = {
+                id: Date.now(),
+                date: date,
+                lotId: lotId,
+                recipeCode: recipeCode,
+                recipeTitle: recipeTitle,
+                batchVol: batchVol,
+                totalScore: totalScore,
+                verdict: verdict,
+                scores: scores,
+                descriptors: descriptors,
+                corrections: corrections,
+                notes: notes
+            };
+            history.unshift(entry);
+            saveSensoryHistory(history);
+            showToast(`✅ Evaluación de ${lotId} archivada con éxito.`);
+            resetSensoryForm();
+        }
+    }
+
+    function editSensoryBatch(id) {
+        const history = getSensoryHistory();
+        const entry = history.find(s => s.id === id);
+        if (!entry) return;
+
+        currentEditingSensoryId = entry.id;
+
+        document.getElementById('sensory-recipe-select').value = entry.recipeCode;
+        document.getElementById('sensory-lot-id').value = entry.lotId;
+        document.getElementById('sensory-date').value = entry.date;
+        document.getElementById('sensory-batch-vol').value = entry.batchVol;
+        document.getElementById('sensory-descriptors').value = entry.descriptors || '';
+        document.getElementById('sensory-notes').value = entry.notes || '';
+
+        document.getElementById('s-visual').value = entry.scores.visual;
+        document.getElementById('s-olfato').value = entry.scores.olfato;
+        document.getElementById('s-gusto').value = entry.scores.gusto;
+        document.getElementById('s-textura').value = entry.scores.textura;
+        document.getElementById('s-dilucion').value = entry.scores.dilucion;
+
+        // Cargar gotas en multitintura
+        DOSING_AGENTS.forEach(agent => {
+            const input = document.getElementById(`dose_drops_${agent.id}`);
+            const found = entry.corrections ? entry.corrections.find(c => c.agentId === agent.id) : null;
+            if (input) input.value = found ? found.drops : 0;
+        });
+
+        updateSensoryScores();
+        calculateCorrections();
+
+        const banner = document.getElementById('sensory-edit-banner');
+        const bannerText = document.getElementById('sensory-edit-lot-display');
+        const btnSave = document.getElementById('btn-save-sensory');
+
+        if (banner) banner.style.display = 'flex';
+        if (bannerText) bannerText.innerText = `${entry.lotId} (${entry.recipeTitle.split('(')[0]})`;
+        if (btnSave) {
+            btnSave.innerText = '💾 Sobrescribir Evaluación en Historial';
+            btnSave.classList.add('btn-update-batch');
+        }
+
+        switchTab('sensory');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelSensoryEdit() {
+        currentEditingSensoryId = null;
+        const banner = document.getElementById('sensory-edit-banner');
+        const btnSave = document.getElementById('btn-save-sensory');
+
+        if (banner) banner.style.display = 'none';
+        if (btnSave) {
+            btnSave.innerText = '💾 Guardar Evaluación en Historial';
+            btnSave.classList.remove('btn-update-batch');
+        }
+        resetSensoryForm();
+    }
+
+    function resetSensoryForm() {
+        document.getElementById('s-visual').value = 13;
+        document.getElementById('s-olfato').value = 21;
+        document.getElementById('s-gusto').value = 30;
+        document.getElementById('s-textura').value = 13;
+        document.getElementById('s-dilucion').value = 8;
+        document.getElementById('sensory-descriptors').value = '';
+        document.getElementById('sensory-notes').value = '';
+        DOSING_AGENTS.forEach(agent => {
+            const el = document.getElementById(`dose_drops_${agent.id}`);
+            if (el) el.value = 0;
+        });
+        updateSensoryScores();
+        calculateCorrections();
+    }
+
+    function updateSensoryHistoryTable() {
+        const history = getSensoryHistory();
+        const sensoryCount = document.getElementById('sensoryCount');
+        const tbody = document.getElementById('sensoryHistoryTableBody');
+        const emptyMsg = document.getElementById('emptySensoryMsg');
+
+        if (sensoryCount) sensoryCount.innerText = history.length;
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        if (history.length === 0) {
+            emptyMsg.style.display = 'block';
+            return;
+        } else {
+            emptyMsg.style.display = 'none';
+        }
+
+        history.forEach(item => {
+            const tr = document.createElement('tr');
+            let dosingSummary = '<span style="color:var(--text-muted);">Sin dosificación</span>';
+            if (item.corrections && item.corrections.length > 0) {
+                dosingSummary = item.corrections.map(c => `<strong>${c.agentName.split('(')[0]}:</strong> ${c.drops}g/100ml (${c.totalMl} ml)`).join('<br>');
+            }
+
+            let badgeClass = "verdict-aprobado";
+            if (item.totalScore < 70) badgeClass = "verdict-rechazado";
+            else if (item.totalScore < 85) badgeClass = "verdict-condicional";
+
+            tr.innerHTML = `
+                <td><strong>${item.date}</strong></td>
+                <td><span class="badge" style="background-color:#e2e3e5; padding:3px 6px; border-radius:3px; font-weight:700;">${item.lotId}</span></td>
+                <td><strong>${item.recipeTitle.split('(')[0]}</strong> <small>(${item.batchVol} L)</small></td>
+                <td class="text-center font-bold" style="font-size:1.1rem; color:var(--wine);">${item.totalScore}</td>
+                <td class="text-center"><span class="verdict-tag ${badgeClass}" style="font-size:0.7rem; padding:3px 8px;">${item.verdict}</span></td>
+                <td><small>${item.descriptors || '—'}</small></td>
+                <td style="font-size:0.75rem;">${dosingSummary}</td>
+                <td class="text-center" style="white-space: nowrap;">
+                    <button class="btn btn-edit" onclick="editSensoryBatch(${item.id})">✏️ Modificar</button>
+                    <button class="btn btn-danger" onclick="deleteSensoryBatch(${item.id})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteSensoryBatch(id) {
+        if (!confirm("¿Deseas eliminar este registro de cata?")) return;
+        let history = getSensoryHistory();
+        history = history.filter(s => s.id !== id);
+        if (currentEditingSensoryId === id) {
+            cancelSensoryEdit();
+        }
+        saveSensoryHistory(history);
+    }
+
+    function clearSensoryHistory() {
+        if (!confirm("¿Seguro que deseas vaciar TODO el historial de catas?")) return;
+        localStorage.removeItem(SENSORY_STORAGE_KEY);
+        currentEditingSensoryId = null;
+        updateSensoryHistoryTable();
+    }
+
+    function exportSensoryCSV() {
+        const history = getSensoryHistory();
+        if (history.length === 0) {
+            alert("No hay evaluaciones organolépticas para exportar.");
+            return;
+        }
+
+        let csv = "Fecha,Lote ID,Receta,Volumen Lote (L),Puntuacion,Dictamen,Visual(15),Olfato(25),Gusto(35),Textura(15),Dilucion(10),Descriptores,Dosificaciones,Notas\n";
+        history.forEach(h => {
+            let dosingStr = (h.corrections || []).map(c => `${c.agentName}:${c.drops}gotas(${c.totalMl}ml)`).join(' | ');
+            const safeNotes = (h.notes || '').replace(/"/g, '""');
+            const safeDesc = (h.descriptors || '').replace(/"/g, '""');
+            csv += `"${h.date}","${h.lotId}","${h.recipeTitle.replace(/"/g, '""')}","${h.batchVol}","${h.totalScore}","${h.verdict}","${h.scores.visual}","${h.scores.olfato}","${h.scores.gusto}","${h.scores.textura}","${h.scores.dilucion}","${safeDesc}","${dosingStr}","${safeNotes}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Historial_Catas_DonAurelio_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    /* ==========================================================================
+       NAVEGACIÓN Y COMUNES
+       ========================================================================== */
+
     function showToast(msg) {
         const toast = document.getElementById('toastNotification');
         toast.innerText = msg;
@@ -1469,7 +2045,7 @@
         const activeBtn = document.getElementById(`btn-${tabId}`) || document.querySelector('.nav-tab');
         if (activeBtn) activeBtn.classList.add('active');
 
-        if (tabId !== 'master' && tabId !== 'history') {
+        if (tabId !== 'master' && tabId !== 'history' && tabId !== 'sensory') {
             recalculateRecipe(tabId);
         }
 
@@ -1484,6 +2060,9 @@
             document.getElementById(`vol-${code}`).value = masterVol.toFixed(1);
             recalculateRecipe(code);
             showToast(`🔄 Ficha restaurada al lote maestro (${masterVol.toFixed(1)} L).`);
+        } else if (activeTab && activeTab.id === 'tab-sensory') {
+            resetSensoryForm();
+            showToast("🔄 Formulario organoléptico restaurado.");
         }
     }
 
