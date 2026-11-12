@@ -1885,8 +1885,8 @@
 </script>
     
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCjigD52XIQfXbCa8YBGRmZN5ql_zxDRfA",
@@ -1906,8 +1906,7 @@
       try {
           await setDoc(docRef, data, { merge: true });
       } catch(e) {
-          console.error("Error al guardar en Firestore:", e);
-          alert("Error de conexión a la nube. Revisa tus reglas de seguridad de Firebase (deben estar en modo de prueba).");
+          alert("❌ ERROR DE ESCRITURA FIREBASE:\n" + e.message + "\nCódigo: " + e.code);
       }
   };
 
@@ -1917,9 +1916,11 @@
       } else {
           window.cloudUpdate(null);
       }
+  }, (error) => {
+      alert("❌ ERROR DE LECTURA FIREBASE:\n" + error.message + "\nCódigo: " + error.code);
   });
+    
 </script>
-
 
 </body>
 </html>
