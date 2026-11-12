@@ -1883,7 +1883,6 @@
         }
     }
 </script>
-    
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
   import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
@@ -1904,7 +1903,14 @@
 
   window.saveToCloud = async function(data) {
       try {
-          await setDoc(docRef, data, { merge: true });
+          // Solución al error de "Nested arrays": convertimos las listas a texto (JSON) antes de subir.
+          const safeData = {
+              recipes_json: JSON.stringify(data.recipes),
+              productionHistory_json: JSON.stringify(data.productionHistory),
+              sensoryHistory_json: JSON.stringify(data.sensoryHistory),
+              masterBatchSize: data.masterBatchSize
+          };
+          await setDoc(docRef, safeData);
       } catch(e) {
           alert("❌ ERROR DE ESCRITURA FIREBASE:\n" + e.message + "\nCódigo: " + e.code);
       }
@@ -1912,15 +1918,27 @@
 
   onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-          window.cloudUpdate(docSnap.data());
+          const raw = docSnap.data();
+          // Desempaquetamos el texto y lo convertimos de vuelta en listas para la app
+          const parsedData = {
+              recipes: raw.recipes_json ? JSON.parse(raw.recipes_json) : null,
+              productionHistory: raw.productionHistory_json ? JSON.parse(raw.productionHistory_json) : [],
+              sensoryHistory: raw.sensoryHistory_json ? JSON.parse(raw.sensoryHistory_json) : [],
+              masterBatchSize: raw.masterBatchSize || 5.0
+          };
+          
+          if (!parsedData.recipes) {
+              window.cloudUpdate(null);
+          } else {
+              window.cloudUpdate(parsedData);
+          }
       } else {
           window.cloudUpdate(null);
       }
   }, (error) => {
       alert("❌ ERROR DE LECTURA FIREBASE:\n" + error.message + "\nCódigo: " + error.code);
   });
-    
-</script>
+</script>    
 
 </body>
 </html>
